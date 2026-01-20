@@ -18,7 +18,7 @@ def R2  : SPEX64Reg<"r2", 2>;
 def R3  : SPEX64Reg<"r3", 3>;
 def R4  : SPEX64Reg<"r4", 4>;
 def R5  : SPEX64Reg<"r5", 5>;
-def R6  : SPEX64Reg<"r6", 8>;
+def R6  : SPEX64Reg<"r6", 6>;
 def R7  : SPEX64Reg<"r7", 7>;
 
 def R8  : SPEX64Reg<"r8", 8>;
@@ -39,7 +39,7 @@ def R21 : SPEX64Reg<"r21", 21>;
 def R22 : SPEX64Reg<"r22", 22>;
 def R23 : SPEX64Reg<"r23", 23>;
 
-def R24 : SPEX64Reg<"r24", 23>;
+def R24 : SPEX64Reg<"r24", 24>;
 def R25 : SPEX64Reg<"r25", 25>;
 def R26 : SPEX64Reg<"r26", 26>;
 def R27 : SPEX64Reg<"r27", 27>;

@@ -32,7 +32,7 @@ def SPEX64Imm64 : Operand<i64> {
   let DecoderMethod = "DecodeSPEX64Imm64";
 }
 
-class SPEX64Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<6> r6, bits<1> x1,
+class SPEX64Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<1> x1,
                  bits<2> sz2, bits<1> i1, bits<1> i64> : Instruction {
   let OutOperandList = outs;
   let InOperandList  = ins;
@@ -41,6 +41,7 @@ class SPEX64Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<6> r6, bit
 
   let Size = 4;
   bits<32> Inst;
+  bits<6> r6;
   bits<9> K9;
   bits<64> imm;
   bits<64> target;
@@ -58,34 +59,47 @@ class SPEX64Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<6> r6, bit
   let target = 0;
 }
 
-class SPEX64K9Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<6> r6, bits<1> x1,
+class SPEX64InstNoR6<string asmstr, dag outs, dag ins, bits<12> opc, bits<1> x1,
+                     bits<2> sz2, bits<1> i1, bits<1> i64>
+    : SPEX64Inst<asmstr, outs, ins, opc, x1, sz2, i1, i64> {
+  let r6 = 0;
+}
+
+class SPEX64K9Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<1> x1,
                    bits<2> sz2, bits<1> i1, bits<1> i64>
     : SPEX64Inst<asmstr, outs, ins, opc, x1, sz2, i1, i64> {
   bits<9> k9;
   let K9 = k9;
 }
 
+class SPEX64K9InstNoR6<string asmstr, dag outs, dag ins, bits<12> opc,
+                       bits<1> x1, bits<2> sz2, bits<1> i1, bits<1> i64>
+    : SPEX64InstNoR6<asmstr, outs, ins, opc, x1, sz2, i1, i64> {
+  bits<9> k9;
+  let K9 = k9;
+}
+
 class SPEX64BCCInst<string asmstr, dag outs, dag ins, bits<9> k9val,
                     bits<1> i64>
-    : SPEX64K9Inst<asmstr, outs, ins, 0x100, 0, 0, 0b00, 1, i64> {
+    : SPEX64K9InstNoR6<asmstr, outs, ins, 0x100, 0b0, 0b00, 1, i64> {
   let k9 = k9val;
 }
 
 def SPEX64InstrInfo : InstrInfo;
 
 // SYS opcodes (0x000-0x00B)
-def NOP     : SPEX64Inst<"nop",     (outs), (ins), 0x000, 0, 0, 0b00, 0, 0>;
-def HLT     : SPEX64Inst<"hlt",     (outs), (ins), 0x001, 0, 0, 0b00, 0, 0>;
-def RET     : SPEX64Inst<"ret",     (outs), (ins), 0x002, 0, 0, 0b00, 0, 0>;
-def SYSCALL : SPEX64Inst<"syscall", (outs), (ins), 0x003, 0, 0, 0b00, 0, 0>;
-def TRAP    : SPEX64Inst<"trap",    (outs), (ins), 0x004, 0, 0, 0b00, 0, 0>;
-def ERET    : SPEX64Inst<"eret",    (outs), (ins), 0x005, 0, 0, 0b00, 0, 0>;
-def FENCE   : SPEX64Inst<"fence",   (outs), (ins), 0x006, 0, 0, 0b00, 0, 0>;
-def PAUSE   : SPEX64Inst<"pause",   (outs), (ins), 0x007, 0, 0, 0b00, 0, 0>;
-def INTEN   : SPEX64Inst<"inten",   (outs), (ins), 0x008, 0, 0, 0b00, 0, 0>;
-def INTDIS  : SPEX64Inst<"intdis",  (outs), (ins), 0x009, 0, 0, 0b00, 0, 0>;
-def WFI     : SPEX64Inst<"wfi",     (outs), (ins), 0x00A, 0, 0, 0b00, 0, 0>;
-def ILL     : SPEX64Inst<"ill",     (outs), (ins), 0x00B, 0, 0, 0b00, 0, 0>;
+def NOP     : SPEX64InstNoR6<"nop", (outs), (ins), 0x000, 0, 0b00, 0, 0>;
+def HLT     : SPEX64InstNoR6<"hlt", (outs), (ins), 0x001, 0, 0b00, 0, 0>;
+def RET     : SPEX64InstNoR6<"ret", (outs), (ins), 0x002, 0, 0b00, 0, 0>;
+def SYSCALL : SPEX64InstNoR6<"syscall", (outs), (ins), 0x003, 0, 0b00, 0, 0>;
+def TRAP    : SPEX64InstNoR6<"trap", (outs), (ins), 0x004, 0, 0b00, 0, 0>;
+def ERET    : SPEX64InstNoR6<"eret", (outs), (ins), 0x005, 0, 0b00, 0, 0>;
+def FENCE   : SPEX64InstNoR6<"fence", (outs), (ins), 0x006, 0, 0b00, 0, 0>;
+def PAUSE   : SPEX64InstNoR6<"pause", (outs), (ins), 0x007, 0, 0b00, 0, 0>;
+def INTEN   : SPEX64InstNoR6<"inten", (outs), (ins), 0x008, 0, 0b00, 0, 0>;
+def INTDIS  : SPEX64InstNoR6<"intdis", (outs), (ins), 0x009, 0, 0b00, 0, 0>;
+def WFI     : SPEX64InstNoR6<"wfi", (outs), (ins), 0x00A, 0, 0b00, 0, 0>;
+def ILL     : SPEX64InstNoR6<"ill", (outs), (ins), 0x00B, 0, 0b00, 0, 0>;
 
 // bcc (absolute target, hyphenated condition)
 multiclass SPEX64_BCC_COND<string cond, bits<9> k9val> {
@@ -115,19 +129,19 @@ defm BCC_CC  : SPEX64_BCC_COND<"cc",  15>;
 
 // jmp / call / sp
 def JMP_R : SPEX64Inst<"jmp\t$r6", (outs), (ins GPR:$r6), 0x200, 0, 0b00, 0, 0>;
-def JMP32 : SPEX64Inst<"jmp\t$target", (outs), (ins SPEX64Imm32:$target),
-                       0x200, 0, 0b00, 1, 0> {
+def JMP32 : SPEX64InstNoR6<"jmp\t$target", (outs), (ins SPEX64Imm32:$target),
+                           0x200, 0, 0b00, 1, 0> {
 }
-def JMP64 : SPEX64Inst<"jmp\t$target", (outs), (ins SPEX64Imm64:$target),
-                       0x200, 0, 0b00, 1, 1> {
+def JMP64 : SPEX64InstNoR6<"jmp\t$target", (outs), (ins SPEX64Imm64:$target),
+                           0x200, 0, 0b00, 1, 1> {
 }
 
 def CALL_R : SPEX64Inst<"call\t$r6", (outs), (ins GPR:$r6), 0x203, 0, 0b00, 0, 0>;
-def CALL32 : SPEX64Inst<"call\t$target", (outs), (ins SPEX64Imm32:$target),
-                        0x203, 0, 0b00, 1, 0> {
+def CALL32 : SPEX64InstNoR6<"call\t$target", (outs), (ins SPEX64Imm32:$target),
+                            0x203, 0, 0b00, 1, 0> {
 }
-def CALL64 : SPEX64Inst<"call\t$target", (outs), (ins SPEX64Imm64:$target),
-                        0x203, 0, 0b00, 1, 1> {
+def CALL64 : SPEX64InstNoR6<"call\t$target", (outs), (ins SPEX64Imm64:$target),
+                            0x203, 0, 0b00, 1, 1> {
 }
 
 def SP_RX : SPEX64Inst<"sp\t$r6", (outs), (ins GPR:$r6), 0x206, 0, 0b00, 0, 0>;
@@ -143,32 +157,30 @@ def SP64 : SPEX64Inst<"sp\t$r6, $target", (outs),
 // mov* (rx <-> r6). Lane-local variants are represented as separate mnemonics.
 multiclass SPEX64_MOV_SZ<string def_suf, string asm_suf, bits<2> sz2> {
   def MOV#def_suf : SPEX64Inst<"mov"#asm_suf#"\trx, $r6", (outs),
-                               (ins GPR:$r6),
-                               0x300, 0, sz2, 0, 0>;
+                               (ins GPR:$r6), 0x300, 0, sz2, 0, 0>;
   def MOV#def_suf#"_R" : SPEX64Inst<"mov"#asm_suf#"\t$r6, rx", (outs),
-                                   (ins GPR:$r6),
-                                   0x300, 1, sz2, 0, 0>;
-  def MOV#def_suf#"_CX0" : SPEX64Inst<"mov"#asm_suf#"\tcx0", (outs), (ins),
+                                   (ins GPR:$r6), 0x300, 1, sz2, 0, 0>;
+  def MOV#def_suf#"_CX0" : SPEX64InstNoR6<"mov"#asm_suf#"\tcx0", (outs), (ins),
                                     0x300, 0, sz2, 0, 0> {
     let K9 = 1;
   }
-  def MOV#def_suf#"_CX1" : SPEX64Inst<"mov"#asm_suf#"\tcx1", (outs), (ins),
+  def MOV#def_suf#"_CX1" : SPEX64InstNoR6<"mov"#asm_suf#"\tcx1", (outs), (ins),
                                     0x300, 0, sz2, 0, 0> {
     let K9 = 2;
   }
-  def MOV#def_suf#"_CAS" : SPEX64Inst<"mov"#asm_suf#"\tcas", (outs), (ins),
+  def MOV#def_suf#"_CAS" : SPEX64InstNoR6<"mov"#asm_suf#"\tcas", (outs), (ins),
                                     0x300, 0, sz2, 0, 0> {
     let K9 = 3;
   }
-  def MOV#def_suf#"_CX0_R" : SPEX64Inst<"mov"#asm_suf#"\tcx0, rx", (outs), (ins),
+  def MOV#def_suf#"_CX0_R" : SPEX64InstNoR6<"mov"#asm_suf#"\tcx0, rx", (outs), (ins),
                                       0x300, 1, sz2, 0, 0> {
     let K9 = 1;
   }
-  def MOV#def_suf#"_CX1_R" : SPEX64Inst<"mov"#asm_suf#"\tcx1, rx", (outs), (ins),
+  def MOV#def_suf#"_CX1_R" : SPEX64InstNoR6<"mov"#asm_suf#"\tcx1, rx", (outs), (ins),
                                       0x300, 1, sz2, 0, 0> {
     let K9 = 2;
   }
-  def MOV#def_suf#"_CAS_R" : SPEX64Inst<"mov"#asm_suf#"\tcas, rx", (outs), (ins),
+  def MOV#def_suf#"_CAS_R" : SPEX64InstNoR6<"mov"#asm_suf#"\tcas, rx", (outs), (ins),
                                       0x300, 1, sz2, 0, 0> {
     let K9 = 3;
   }
@@ -195,13 +207,9 @@ defm MOV_ALIAS : SPEX64_MOV_ALIAS_SZ<"64", "64">;
 
 // li*
 multiclass SPEX64_LI_SZ<string def_suf, string asm_suf, bits<2> sz2> {
-  def LI#def_suf#"_32" : SPEX64Inst<"li"#asm_suf#"\trx, $imm", (outs),
-                                  (ins SPEX64Imm32:$imm),
-                                  0x302, 0, sz2, 1, 0> {
+  def LI#def_suf#"_32" : SPEX64InstNoR6<"li"#asm_suf#"\trx, $imm", (outs), (ins SPEX64Imm32:$imm), 0, 0, sz2, 1, 0> {
   }
-  def LI#def_suf#"_64" : SPEX64Inst<"li"#asm_suf#"\trx, $imm", (outs),
-                                  (ins SPEX64Imm64:$imm),
-                                  0x302, 0, sz2, 1, 1> {
+  def LI#def_suf#"_64" : SPEX64InstNoR6<"li"#asm_suf#"\trx, $imm", (outs), (ins SPEX64Imm64:$imm), 0, 0, sz2, 1, 1> {
   }
 }
 defm LI : SPEX64_LI_SZ<"8",  "8",  0b00>;
@@ -215,11 +223,11 @@ multiclass SPEX64_ALU_SZ<bits<12> opc, string mn, string def_suf,
   def NAME#def_suf#"_R" : SPEX64Inst<mn#asm_suf#"\t$r6", (outs),
                                     (ins GPR:$r6),
                                     opc, 0, sz2, 0, 0>;
-  def NAME#def_suf#"_I32" : SPEX64Inst<mn#asm_suf#"\t$imm", (outs),
+  def NAME#def_suf#"_I32" : SPEX64InstNoR6<mn#asm_suf#"\t$imm", (outs),
                                       (ins SPEX64Imm32:$imm),
                                       opc, 0, sz2, 1, 0> {
   }
-  def NAME#def_suf#"_I64" : SPEX64Inst<mn#asm_suf#"\t$imm", (outs),
+  def NAME#def_suf#"_I64" : SPEX64InstNoR6<mn#asm_suf#"\t$imm", (outs),
                                       (ins SPEX64Imm64:$imm),
                                       opc, 0, sz2, 1, 1> {
   }
@@ -241,7 +249,7 @@ defm TEST : SPEX64_ALU<0x406, "test">;
 // Unary ALU
 multiclass SPEX64_UNARY_SZ<bits<12> opc, string mn, string def_suf,
                            string asm_suf, bits<2> sz2> {
-  def NAME#def_suf : SPEX64Inst<mn#asm_suf, (outs), (ins),
+  def NAME#def_suf : SPEX64InstNoR6<mn#asm_suf, (outs), (ins),
                                opc, 0, sz2, 0, 0>;
 }
 multiclass SPEX64_UNARY<bits<12> opc, string mn> {
@@ -258,7 +266,7 @@ defm DEC : SPEX64_UNARY<0x413, "dec">;
 // Shift / bit (imm32 only)
 multiclass SPEX64_SHIFT_SZ<bits<12> opc, string mn, string def_suf,
                            string asm_suf, bits<2> sz2> {
-  def NAME#def_suf : SPEX64Inst<mn#asm_suf#"\t$imm", (outs),
+  def NAME#def_suf : SPEX64InstNoR6<mn#asm_suf#"\t$imm", (outs),
                                 (ins SPEX64Imm32:$imm),
                                 opc, 0, sz2, 1, 0> {
   }
@@ -280,21 +288,21 @@ defm BINV : SPEX64_SHIFT<0x613, "binv">;
 // Load / store (base rx, optional offset)
 multiclass SPEX64_LS_NO_R6<bits<12> opc, string mn, string def_suf,
                            string asm_suf, bits<2> sz2, bits<1> x1> {
-  def NAME#def_suf : SPEX64Inst<mn#asm_suf#"\t[rx]", (outs), (ins),
+  def NAME#def_suf : SPEX64InstNoR6<mn#asm_suf#"\t[rx]", (outs), (ins),
                                opc, x1, sz2, 0, 0>;
-  def NAME#def_suf#"_I32" : SPEX64Inst<mn#asm_suf#"\t[rx + $imm]", (outs),
+  def NAME#def_suf#"_I32" : SPEX64InstNoR6<mn#asm_suf#"\t[rx + $imm]", (outs),
                                       (ins SPEX64Imm32:$imm),
                                       opc, x1, sz2, 1, 0> {
   }
-  def NAME#def_suf#"_I64" : SPEX64Inst<mn#asm_suf#"\t[rx + $imm]", (outs),
+  def NAME#def_suf#"_I64" : SPEX64InstNoR6<mn#asm_suf#"\t[rx + $imm]", (outs),
                                       (ins SPEX64Imm64:$imm),
                                       opc, x1, sz2, 1, 1> {
   }
 }
 multiclass SPEX64_LS_R6<bits<12> opc, string mn, string def_suf, string asm_suf,
                         bits<2> sz2, bits<1> x1> {
-  def NAME#def_suf : SPEX64Inst<mn#asm_suf#"\t$r6, [rx]", (outs),
-                                (ins GPR:$r6), opc, x1, sz2, 0, 0>;
+  def NAME#def_suf : SPEX64Inst<mn#asm_suf#"\t$r6, [rx]", (outs), (ins GPR:$r6),
+                               opc, x1, sz2, 0, 0>;
   def NAME#def_suf#"_I32" : SPEX64Inst<mn#asm_suf#"\t$r6, [rx + $imm]", (outs),
                                       (ins GPR:$r6, SPEX64Imm32:$imm),
                                       opc, x1, sz2, 1, 0> {
@@ -328,13 +336,13 @@ defm ST_R : SPEX64_LS_R6_SZS<0x702, "st.r", 1>;
 def CAS64 : SPEX64Inst<"cas64\t$r6", (outs), (ins GPR:$r6), 0x800, 0, 0b11, 0, 0>;
 
 // CSR / MMU / IPI
-def CSRR : SPEX64Inst<"csrr\t$imm", (outs), (ins SPEX64Imm32:$imm),
+def CSRR : SPEX64InstNoR6<"csrr\t$imm", (outs), (ins SPEX64Imm32:$imm),
                       0x900, 0, 0b00, 1, 0> {
 }
-def CSRW : SPEX64Inst<"csrw\t$imm", (outs), (ins SPEX64Imm32:$imm),
+def CSRW : SPEX64InstNoR6<"csrw\t$imm", (outs), (ins SPEX64Imm32:$imm),
                       0x902, 0, 0b00, 1, 0> {
 }
-def TLBFLUSH : SPEX64Inst<"tlbflush", (outs), (ins), 0x910, 0, 0b00, 0, 0>;
+def TLBFLUSH : SPEX64InstNoR6<"tlbflush", (outs), (ins), 0x910, 0, 0b00, 0, 0>;
 def TLBFLUSHASID : SPEX64Inst<"tlbflushasid\t$r6", (outs), (ins GPR:$r6),
                               0x911, 0, 0b00, 0, 0>;
 def ASIDSET : SPEX64Inst<"asidset\t$r6", (outs), (ins GPR:$r6),
@@ -343,7 +351,7 @@ def IPISEND : SPEX64Inst<"ipisend\t$r6", (outs), (ins GPR:$r6),
                          0x920, 0, 0b00, 0, 0>;
 
 // Lane read (K9 encodes LID and FIELD).
-def LRD : SPEX64K9Inst<"lrd\t$k9", (outs), (ins SPEX64Imm9:$k9),
+def LRD : SPEX64K9InstNoR6<"lrd\t$k9", (outs), (ins SPEX64Imm9:$k9),
                        0xA00, 0, 0b00, 0, 0>;
 
 defm : RemapAllTargetPseudoPointerOperands<GPR>;

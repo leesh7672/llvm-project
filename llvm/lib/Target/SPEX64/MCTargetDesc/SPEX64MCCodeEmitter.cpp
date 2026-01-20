@@ -60,10 +60,10 @@ void SPEX64MCCodeEmitter::encodeInstruction(
   if (W0 & (1u << 16)) {
     Size = (W0 & (1u << 15)) ? 12 : 8;
   }
-  support::endian::write(CB, W0, endianness::little);
-
-  if (Size <= 4)
+  if (Size <= 4) {
+    support::endian::write(CB, W0, endianness::little);
     return;
+  }
 
   const MCOperand *ImmOp = nullptr;
   for (unsigned I = 0, E = MI.getNumOperands(); I < E; ++I) {
@@ -86,6 +86,7 @@ void SPEX64MCCodeEmitter::encodeInstruction(
     }
   }
 
+  support::endian::write(CB, W0, endianness::little);
   if (Size == 8) {
     support::endian::write(CB, Imm32, endianness::little);
   } else if (Size == 12) {
