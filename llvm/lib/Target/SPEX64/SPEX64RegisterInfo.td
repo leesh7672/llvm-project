@@ -4,6 +4,8 @@ class SPEX64Reg<string n> : Register<n> {
   let Namespace = "SPEX64";
 }
 
+def RX : SPEX64Reg<"rx">;
+
 def R0  : SPEX64Reg<"r0">;
 def R1  : SPEX64Reg<"r1">;
 def R2  : SPEX64Reg<"r2">;
@@ -85,3 +87,5 @@ def GPR : RegisterClass<"SPEX64", [i64], 64,
        R40, R41, R42, R43, R44, R45, R46, R47,
        R48, R49, R50, R51, R52, R53, R54, R55,
        R56, R57, R58, R59, R60, R61, R62, R63)>;
+
+def ACC : RegisterClass<"SPEX64", [i64], 64, (add RX)>;
