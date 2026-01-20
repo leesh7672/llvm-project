@@ -1,35 +1,103 @@
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/MC/MCCodeEmitter.h"
 #include "llvm/MC/MCContext.h"
+#include "llvm/MC/MCExpr.h"
+#include "llvm/MC/MCFixup.h"
 #include "llvm/MC/MCInst.h"
 #include "llvm/MC/MCInstrInfo.h"
+#include "llvm/MC/MCRegisterInfo.h"
+#include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/Support/Endian.h"
 
 #include <cstdint>
+
 namespace llvm {
 namespace {
+
 class SPEX64MCCodeEmitter : public MCCodeEmitter {
+  MCContext &Ctx;
+  const MCInstrInfo &MCII;
+
+  uint64_t getBinaryCodeForInstr(const MCInst &MI,
+                                 SmallVectorImpl<MCFixup> &Fixups,
+                                 const MCSubtargetInfo &STI) const;
+
+  unsigned getMachineOpValue(const MCInst &MI, const MCOperand &MO,
+                             SmallVectorImpl<MCFixup> &Fixups,
+                             const MCSubtargetInfo &STI) const;
+
 public:
-  explicit SPEX64MCCodeEmitter(const MCInstrInfo &) {}
+  SPEX64MCCodeEmitter(MCContext &Ctx, const MCInstrInfo &MCII)
+      : Ctx(Ctx), MCII(MCII) {}
   ~SPEX64MCCodeEmitter() override = default;
 
-  void encodeInstruction(const MCInst &Inst, SmallVectorImpl<char> &CB,
+  void encodeInstruction(const MCInst &MI, SmallVectorImpl<char> &CB,
                          SmallVectorImpl<MCFixup> &Fixups,
-                         const MCSubtargetInfo &STI) const override {
-    (void)Inst;
-    (void)Fixups;
-    (void)STI;
-    uint32_t W0 = 0;
-    char Buf[sizeof(W0)];
-    support::endian::write32le(Buf, W0);
-    CB.append(Buf, Buf + sizeof(Buf));
-  }
+                         const MCSubtargetInfo &STI) const override;
 };
+
+unsigned SPEX64MCCodeEmitter::getMachineOpValue(
+    const MCInst &MI, const MCOperand &MO, SmallVectorImpl<MCFixup> &Fixups,
+    const MCSubtargetInfo &STI) const {
+  (void)MI;
+  (void)Fixups;
+  (void)STI;
+  if (MO.isReg())
+    return Ctx.getRegisterInfo()->getEncodingValue(MO.getReg());
+  if (MO.isImm())
+    return static_cast<unsigned>(MO.getImm());
+  if (MO.isExpr())
+    return 0;
+  return 0;
+}
+
+void SPEX64MCCodeEmitter::encodeInstruction(
+    const MCInst &MI, SmallVectorImpl<char> &CB,
+    SmallVectorImpl<MCFixup> &Fixups, const MCSubtargetInfo &STI) const {
+  const MCInstrDesc &Desc = MCII.get(MI.getOpcode());
+  unsigned Size = Desc.getSize();
+
+  uint32_t W0 = static_cast<uint32_t>(getBinaryCodeForInstr(MI, Fixups, STI));
+  support::endian::write<uint32_t>(CB, W0, endianness::little);
+
+  if (Size <= 4)
+    return;
+
+  const MCOperand *ImmOp = nullptr;
+  for (unsigned I = 0, E = MI.getNumOperands(); I < E; ++I) {
+    const MCOperand &Op = MI.getOperand(I);
+    if (Op.isImm() || Op.isExpr()) {
+      ImmOp = &Op;
+      break;
+    }
+  }
+
+  uint32_t Imm32 = 0;
+  uint64_t Imm64 = 0;
+  if (ImmOp) {
+    if (ImmOp->isImm()) {
+      Imm64 = static_cast<uint64_t>(ImmOp->getImm());
+      Imm32 = static_cast<uint32_t>(Imm64);
+    } else if (ImmOp->isExpr()) {
+      MCFixupKind Kind = (Size == 8) ? FK_Data_4 : FK_Data_8;
+      Fixups.push_back(MCFixup::create(4, ImmOp->getExpr(), Kind));
+    }
+  }
+
+  if (Size == 8) {
+    support::endian::write<uint32_t>(CB, Imm32, endianness::little);
+  } else if (Size == 12) {
+    support::endian::write<uint64_t>(CB, Imm64, endianness::little);
+  }
+}
+
 } // namespace
 
 MCCodeEmitter *createSPEX64MCCodeEmitter(const MCInstrInfo &MCII,
                                          MCContext &Ctx) {
-  (void)Ctx;
-  return new SPEX64MCCodeEmitter(MCII);
+  return new SPEX64MCCodeEmitter(Ctx, MCII);
 }
+
+#include "SPEX64GenMCCodeEmitter.inc"
+
 } // namespace llvm

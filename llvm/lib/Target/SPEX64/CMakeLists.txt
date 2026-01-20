@@ -1,6 +1,7 @@
 set(LLVM_TARGET_DEFINITIONS SPEX64.td)
 
 tablegen(LLVM SPEX64GenInstrInfo.inc       -gen-instr-info)
+tablegen(LLVM SPEX64GenMCCodeEmitter.inc  -gen-emitter)
 tablegen(LLVM SPEX64GenRegisterInfo.inc    -gen-register-info)
 tablegen(LLVM SPEX64GenSubtargetInfo.inc   -gen-subtarget)
 tablegen(LLVM SPEX64GenAsmMatcher.inc      -gen-asm-matcher)
