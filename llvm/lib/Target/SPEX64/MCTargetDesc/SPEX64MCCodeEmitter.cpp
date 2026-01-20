@@ -1,3 +1,4 @@
+#include "SPEX64MCTargetDesc.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/MC/MCCodeEmitter.h"
 #include "llvm/MC/MCContext.h"
@@ -7,7 +8,7 @@
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/MC/MCRegisterInfo.h"
 #include "llvm/MC/MCSubtargetInfo.h"
-#include "llvm/Support/Endian.h"
+#include "llvm/Support/EndianStream.h"
 
 #include <cstdint>
 
@@ -58,7 +59,7 @@ void SPEX64MCCodeEmitter::encodeInstruction(
   unsigned Size = Desc.getSize();
 
   uint32_t W0 = static_cast<uint32_t>(getBinaryCodeForInstr(MI, Fixups, STI));
-  support::endian::write<uint32_t>(CB, W0, endianness::little);
+  support::endian::write(CB, W0, endianness::little);
 
   if (Size <= 4)
     return;
@@ -85,9 +86,9 @@ void SPEX64MCCodeEmitter::encodeInstruction(
   }
 
   if (Size == 8) {
-    support::endian::write<uint32_t>(CB, Imm32, endianness::little);
+    support::endian::write(CB, Imm32, endianness::little);
   } else if (Size == 12) {
-    support::endian::write<uint64_t>(CB, Imm64, endianness::little);
+    support::endian::write(CB, Imm64, endianness::little);
   }
 }
 
