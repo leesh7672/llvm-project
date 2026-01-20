@@ -1,4 +1,4 @@
-#include "SPEX64TargetInfo.h"
+#include "../TargetInfo/SPEX64TargetInfo.h"
 
 using namespace llvm;
 
