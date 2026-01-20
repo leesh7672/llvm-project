@@ -1,8 +1,9 @@
+add_subdirectory(TargetInfo)
+add_subdirectory(MCTargetDesc)
+
 add_llvm_target(SPEX64CodeGen
   SPEX64TargetMachine.cpp
   SPEX64TargetMachineImpl.cpp
-  SPEX64TargetInfo.cpp
-  SPEX64MCTargetDesc.cpp
 )
 
-add_custom_target(SPEX64 DEPENDS LLVMSPEX64CodeGen)
+target_link_libraries(LLVMSPEX64CodeGen PRIVATE LLVMSPEX64Info LLVMSPEX64Desc)
