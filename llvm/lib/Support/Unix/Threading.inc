@@ -71,6 +71,11 @@
 #endif
 
 namespace llvm {
+#if defined(__MVS__)
+using llvm_thread_id_t = unsigned long long;
+#else
+using llvm_thread_id_t = pthread_t;
+#endif
 pthread_t
 llvm_execute_on_thread_impl(void *(*ThreadFunc)(void *), void *Arg,
                             std::optional<unsigned> StackSizeInBytes) {
@@ -119,7 +124,7 @@ void llvm_thread_join_impl(pthread_t Thread) {
   }
 }
 
-llvm::thread::id llvm_thread_get_id_impl(pthread_t Thread) {
+llvm_thread_id_t llvm_thread_get_id_impl(pthread_t Thread) {
 #ifdef __MVS__
   return Thread.__;
 #else
@@ -127,7 +132,7 @@ llvm::thread::id llvm_thread_get_id_impl(pthread_t Thread) {
 #endif
 }
 
-llvm::thread::id llvm_thread_get_current_id_impl() {
+llvm_thread_id_t llvm_thread_get_current_id_impl() {
   return llvm_thread_get_id_impl(::pthread_self());
 }
 
