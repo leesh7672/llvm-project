@@ -301,11 +301,12 @@ public:
   }
 };
 
+#define GET_REGISTER_MATCHER
+#define GET_MATCHER_IMPLEMENTATION
+#include "SPEX64GenAsmMatcher.inc"
+
 } // end anonymous namespace
 
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeSPEX64AsmParser() {
   RegisterMCAsmParser<SPEX64AsmParser> X(getTheSPEX64Target());
 }
-
-#define GET_ASSEMBLER_MATCHER
-#include "SPEX64GenAsmMatcher.inc"
