@@ -287,7 +287,7 @@ class SPEX64AsmParser : public MCTargetAsmParser {
 
   unsigned validateTargetOperandClass(MCParsedAsmOperand &Op,
                                       unsigned Kind) override {
-    return Match_Success;
+    return Match_InvalidOperand;
   }
 
 public:
