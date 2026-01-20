@@ -51,6 +51,7 @@ public:
   bool isReg() const override { return Kind == k_Reg; }
   bool isImm() const override { return Kind == k_Imm; }
   bool isMem() const override { return false; }
+  StringRef getToken() const { return Tok; }
 
   bool isImm9() const {
     if (!isImm())
@@ -137,7 +138,7 @@ class SPEX64AsmParser : public MCTargetAsmParser {
   MCAsmParser &getParser() const { return Parser; }
   AsmLexer &getLexer() const { return Parser.getLexer(); }
 
-  bool parseImmOperand(OperandVector &Operands) {
+  bool parseImm(OperandVector &Operands) {
     SMLoc StartLoc = getLexer().getLoc();
 
     if (getLexer().is(AsmToken::Hash) || getLexer().is(AsmToken::At))
@@ -230,11 +231,8 @@ class SPEX64AsmParser : public MCTargetAsmParser {
     if (getLexer().getKind() == AsmToken::Identifier) {
       auto Name = getLexer().getTok().getIdentifier().lower();
       Reg = MatchRegisterName(Name);
-      if (Reg == SPEX64::NoRegister) {
-        Reg = MatchRegisterAltName(Name);
-        if (Reg == SPEX64::NoRegister)
-          return ParseStatus::NoMatch;
-      }
+      if (Reg == SPEX64::NoRegister)
+        return ParseStatus::NoMatch;
 
       AsmToken const &T = getParser().getTok();
       StartLoc = T.getLoc();
@@ -261,7 +259,7 @@ class SPEX64AsmParser : public MCTargetAsmParser {
     if (getLexer().is(AsmToken::Hash) || getLexer().is(AsmToken::At) ||
         getLexer().is(AsmToken::Integer) || getLexer().is(AsmToken::Identifier) ||
         getLexer().is(AsmToken::Minus)) {
-      return parseImmOperand(Operands);
+      return parseImm(Operands);
     }
 
     return Error(getLexer().getLoc(), "unexpected token in operand");
