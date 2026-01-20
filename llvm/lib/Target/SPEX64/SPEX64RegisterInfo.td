@@ -1,82 +1,88 @@
 include "llvm/Target/Target.td"
 
-class SPEX64Reg<string n> : Register<n> {
+class SPEX64Acc<string n> : Register<n> {
   let Namespace = "SPEX64";
 }
 
-def RX : SPEX64Reg<"rx">;
+class SPEX64Reg<string n, bits<6> enc> : Register<n> {
+  let Namespace = "SPEX64";
+  bits<6> Encoding;
+  let Encoding = enc;
+}
 
-def R0  : SPEX64Reg<"r0">;
-def R1  : SPEX64Reg<"r1">;
-def R2  : SPEX64Reg<"r2">;
-def R3  : SPEX64Reg<"r3">;
-def R4  : SPEX64Reg<"r4">;
-def R5  : SPEX64Reg<"r5">;
-def R6  : SPEX64Reg<"r6">;
-def R7  : SPEX64Reg<"r7">;
+def RX : SPEX64Acc<"rx">;
 
-def R8  : SPEX64Reg<"r8">;
-def R9  : SPEX64Reg<"r9">;
-def R10 : SPEX64Reg<"r10">;
-def R11 : SPEX64Reg<"r11">;
-def R12 : SPEX64Reg<"r12">;
-def R13 : SPEX64Reg<"r13">;
-def R14 : SPEX64Reg<"r14">;
-def R15 : SPEX64Reg<"r15">;
+def R0  : SPEX64Reg<"r0", 0>;
+def R1  : SPEX64Reg<"r1", 1>;
+def R2  : SPEX64Reg<"r2", 2>;
+def R3  : SPEX64Reg<"r3", 3>;
+def R4  : SPEX64Reg<"r4", 4>;
+def R5  : SPEX64Reg<"r5", 5>;
+def R6  : SPEX64Reg<"r6", 8>;
+def R7  : SPEX64Reg<"r7", 7>;
 
-def R16 : SPEX64Reg<"r16">;
-def R17 : SPEX64Reg<"r17">;
-def R18 : SPEX64Reg<"r18">;
-def R19 : SPEX64Reg<"r19">;
-def R20 : SPEX64Reg<"r20">;
-def R21 : SPEX64Reg<"r21">;
-def R22 : SPEX64Reg<"r22">;
-def R23 : SPEX64Reg<"r23">;
+def R8  : SPEX64Reg<"r8", 8>;
+def R9  : SPEX64Reg<"r9", 9>;
+def R10 : SPEX64Reg<"r10", 10>;
+def R11 : SPEX64Reg<"r11", 11>;
+def R12 : SPEX64Reg<"r12", 12>;
+def R13 : SPEX64Reg<"r13", 13>;
+def R14 : SPEX64Reg<"r14", 14>;
+def R15 : SPEX64Reg<"r15", 15>;
 
-def R24 : SPEX64Reg<"r24">;
-def R25 : SPEX64Reg<"r25">;
-def R26 : SPEX64Reg<"r26">;
-def R27 : SPEX64Reg<"r27">;
-def R28 : SPEX64Reg<"r28">;
-def R29 : SPEX64Reg<"r29">;
-def R30 : SPEX64Reg<"r30">;
-def R31 : SPEX64Reg<"r31">;
+def R16 : SPEX64Reg<"r16", 16>;
+def R17 : SPEX64Reg<"r17", 17>;
+def R18 : SPEX64Reg<"r18", 18>;
+def R19 : SPEX64Reg<"r19", 19>;
+def R20 : SPEX64Reg<"r20", 20>;
+def R21 : SPEX64Reg<"r21", 21>;
+def R22 : SPEX64Reg<"r22", 22>;
+def R23 : SPEX64Reg<"r23", 23>;
 
-def R32 : SPEX64Reg<"r32">;
-def R33 : SPEX64Reg<"r33">;
-def R34 : SPEX64Reg<"r34">;
-def R35 : SPEX64Reg<"r35">;
-def R36 : SPEX64Reg<"r36">;
-def R37 : SPEX64Reg<"r37">;
-def R38 : SPEX64Reg<"r38">;
-def R39 : SPEX64Reg<"r39">;
+def R24 : SPEX64Reg<"r24", 23>;
+def R25 : SPEX64Reg<"r25", 25>;
+def R26 : SPEX64Reg<"r26", 26>;
+def R27 : SPEX64Reg<"r27", 27>;
+def R28 : SPEX64Reg<"r28", 28>;
+def R29 : SPEX64Reg<"r29", 29>;
+def R30 : SPEX64Reg<"r30", 30>;
+def R31 : SPEX64Reg<"r31", 31>;
 
-def R40 : SPEX64Reg<"r40">;
-def R41 : SPEX64Reg<"r41">;
-def R42 : SPEX64Reg<"r42">;
-def R43 : SPEX64Reg<"r43">;
-def R44 : SPEX64Reg<"r44">;
-def R45 : SPEX64Reg<"r45">;
-def R46 : SPEX64Reg<"r46">;
-def R47 : SPEX64Reg<"r47">;
+def R32 : SPEX64Reg<"r32", 32>;
+def R33 : SPEX64Reg<"r33", 33>;
+def R34 : SPEX64Reg<"r34", 34>;
+def R35 : SPEX64Reg<"r35", 35>;
+def R36 : SPEX64Reg<"r36", 36>;
+def R37 : SPEX64Reg<"r37", 37>;
+def R38 : SPEX64Reg<"r38", 38>;
+def R39 : SPEX64Reg<"r39", 39>;
 
-def R48 : SPEX64Reg<"r48">;
-def R49 : SPEX64Reg<"r49">;
-def R50 : SPEX64Reg<"r50">;
-def R51 : SPEX64Reg<"r51">;
-def R52 : SPEX64Reg<"r52">;
-def R53 : SPEX64Reg<"r53">;
-def R54 : SPEX64Reg<"r54">;
-def R55 : SPEX64Reg<"r55">;
+def R40 : SPEX64Reg<"r40", 40>;
+def R41 : SPEX64Reg<"r41", 41>;
+def R42 : SPEX64Reg<"r42", 42>;
+def R43 : SPEX64Reg<"r43", 43>;
+def R44 : SPEX64Reg<"r44", 44>;
+def R45 : SPEX64Reg<"r45", 45>;
+def R46 : SPEX64Reg<"r46", 46>;
+def R47 : SPEX64Reg<"r47", 47>;
 
-def R56 : SPEX64Reg<"r56">;
-def R57 : SPEX64Reg<"r57">;
-def R58 : SPEX64Reg<"r58">;
-def R59 : SPEX64Reg<"r59">;
-def R60 : SPEX64Reg<"r60">;
-def R61 : SPEX64Reg<"r61">;
-def R62 : SPEX64Reg<"r62">;
-def R63 : SPEX64Reg<"r63">;
+def R48 : SPEX64Reg<"r48", 48>;
+def R49 : SPEX64Reg<"r49", 49>;
+def R50 : SPEX64Reg<"r50", 50>;
+def R51 : SPEX64Reg<"r51", 51>;
+def R52 : SPEX64Reg<"r52", 52>;
+def R53 : SPEX64Reg<"r53", 53>;
+def R54 : SPEX64Reg<"r54", 54>;
+def R55 : SPEX64Reg<"r55", 55>;
+
+def R56 : SPEX64Reg<"r56", 56>;
+def R57 : SPEX64Reg<"r57", 57>;
+def R58 : SPEX64Reg<"r58", 58>;
+def R59 : SPEX64Reg<"r59", 59>;
+def R60 : SPEX64Reg<"r60", 60>;
+def R61 : SPEX64Reg<"r61", 61>;
+def R62 : SPEX64Reg<"r62", 62>;
+def R63 : SPEX64Reg<"r63", 63>;
 
 def GPR : RegisterClass<"SPEX64", [i64], 64,
   (add R0, R1, R2, R3, R4, R5, R6, R7,

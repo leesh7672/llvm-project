@@ -32,7 +32,7 @@ def SPEX64Imm64 : Operand<i64> {
   let DecoderMethod = "DecodeSPEX64Imm64";
 }
 
-class SPEX64Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<1> x1,
+class SPEX64Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<6> r6, bits<1> x1,
                  bits<2> sz2, bits<1> i1, bits<1> i64> : Instruction {
   let OutOperandList = outs;
   let InOperandList  = ins;
@@ -41,7 +41,6 @@ class SPEX64Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<1> x1,
 
   let Size = 4;
   bits<32> Inst;
-  bits<6> r6;
   bits<9> K9;
   bits<64> imm;
   bits<64> target;
@@ -54,13 +53,12 @@ class SPEX64Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<1> x1,
   let Inst{14-9}  = r6;
   let Inst{8-0}   = K9;
 
-  let r6 = 0;
   let K9 = 0;
   let imm = 0;
   let target = 0;
 }
 
-class SPEX64K9Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<1> x1,
+class SPEX64K9Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<6> r6, bits<1> x1,
                    bits<2> sz2, bits<1> i1, bits<1> i64>
     : SPEX64Inst<asmstr, outs, ins, opc, x1, sz2, i1, i64> {
   bits<9> k9;
@@ -69,25 +67,25 @@ class SPEX64K9Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<1> x1,
 
 class SPEX64BCCInst<string asmstr, dag outs, dag ins, bits<9> k9val,
                     bits<1> i64>
-    : SPEX64K9Inst<asmstr, outs, ins, 0x100, 0, 0b00, 1, i64> {
+    : SPEX64K9Inst<asmstr, outs, ins, 0x100, 0, 0, 0b00, 1, i64> {
   let k9 = k9val;
 }
 
 def SPEX64InstrInfo : InstrInfo;
 
 // SYS opcodes (0x000-0x00B)
-def NOP     : SPEX64Inst<"nop",     (outs), (ins), 0x000, 0, 0b00, 0, 0>;
-def HLT     : SPEX64Inst<"hlt",     (outs), (ins), 0x001, 0, 0b00, 0, 0>;
-def RET     : SPEX64Inst<"ret",     (outs), (ins), 0x002, 0, 0b00, 0, 0>;
-def SYSCALL : SPEX64Inst<"syscall", (outs), (ins), 0x003, 0, 0b00, 0, 0>;
-def TRAP    : SPEX64Inst<"trap",    (outs), (ins), 0x004, 0, 0b00, 0, 0>;
-def ERET    : SPEX64Inst<"eret",    (outs), (ins), 0x005, 0, 0b00, 0, 0>;
-def FENCE   : SPEX64Inst<"fence",   (outs), (ins), 0x006, 0, 0b00, 0, 0>;
-def PAUSE   : SPEX64Inst<"pause",   (outs), (ins), 0x007, 0, 0b00, 0, 0>;
-def INTEN   : SPEX64Inst<"inten",   (outs), (ins), 0x008, 0, 0b00, 0, 0>;
-def INTDIS  : SPEX64Inst<"intdis",  (outs), (ins), 0x009, 0, 0b00, 0, 0>;
-def WFI     : SPEX64Inst<"wfi",     (outs), (ins), 0x00A, 0, 0b00, 0, 0>;
-def ILL     : SPEX64Inst<"ill",     (outs), (ins), 0x00B, 0, 0b00, 0, 0>;
+def NOP     : SPEX64Inst<"nop",     (outs), (ins), 0x000, 0, 0, 0b00, 0, 0>;
+def HLT     : SPEX64Inst<"hlt",     (outs), (ins), 0x001, 0, 0, 0b00, 0, 0>;
+def RET     : SPEX64Inst<"ret",     (outs), (ins), 0x002, 0, 0, 0b00, 0, 0>;
+def SYSCALL : SPEX64Inst<"syscall", (outs), (ins), 0x003, 0, 0, 0b00, 0, 0>;
+def TRAP    : SPEX64Inst<"trap",    (outs), (ins), 0x004, 0, 0, 0b00, 0, 0>;
+def ERET    : SPEX64Inst<"eret",    (outs), (ins), 0x005, 0, 0, 0b00, 0, 0>;
+def FENCE   : SPEX64Inst<"fence",   (outs), (ins), 0x006, 0, 0, 0b00, 0, 0>;
+def PAUSE   : SPEX64Inst<"pause",   (outs), (ins), 0x007, 0, 0, 0b00, 0, 0>;
+def INTEN   : SPEX64Inst<"inten",   (outs), (ins), 0x008, 0, 0, 0b00, 0, 0>;
+def INTDIS  : SPEX64Inst<"intdis",  (outs), (ins), 0x009, 0, 0, 0b00, 0, 0>;
+def WFI     : SPEX64Inst<"wfi",     (outs), (ins), 0x00A, 0, 0, 0b00, 0, 0>;
+def ILL     : SPEX64Inst<"ill",     (outs), (ins), 0x00B, 0, 0, 0b00, 0, 0>;
 
 // bcc (absolute target, hyphenated condition)
 multiclass SPEX64_BCC_COND<string cond, bits<9> k9val> {
