@@ -6,9 +6,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "SPEX64TargetMachine.h"
+#include "SPEX64TargetInfo.h"
 #include "llvm/MC/TargetRegistry.h"
-#include "llvm/Target/TargetMachine.h"
-#include "SPEX64TargetInfo.h" 
 
 using namespace llvm;
 
