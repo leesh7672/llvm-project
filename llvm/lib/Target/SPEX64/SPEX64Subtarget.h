@@ -23,7 +23,7 @@ private:
 public:
   SPEX64Subtarget(const Triple &TT, StringRef CPU, StringRef FS);
 
-  void ParseSubtargetFeatures(StringRef CPU, StringRef FS);
+  void ParseSubtargetFeatures(StringRef CPU, StringRef TuneCPU, StringRef FS);
 
   void setLaneID(unsigned V) { CurLane = static_cast<Lane>(V & 3u); }
   Lane getLane() const { return CurLane; }

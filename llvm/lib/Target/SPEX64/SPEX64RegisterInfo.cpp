@@ -1,6 +1,9 @@
 #include "SPEX64RegisterInfo.h"
 #include "SPEX64Subtarget.h"
+#include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineFunction.h"
+#include "llvm/CodeGen/MachineInstr.h"
+#include "llvm/Support/ErrorHandling.h"
 
 using namespace llvm;
 
@@ -63,4 +66,15 @@ BitVector SPEX64RegisterInfo::getReservedRegs(const MachineFunction &MF) const {
 
 Register SPEX64RegisterInfo::getFrameRegister(const MachineFunction &MF) const {
   return getStackRegister(MF);
+}
+
+const MCPhysReg *
+SPEX64RegisterInfo::getCalleeSavedRegs(const MachineFunction *) const {
+  return nullptr;
+}
+
+bool SPEX64RegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator MI,
+                                             int, unsigned FIOperandNum,
+                                             RegScavenger *) const {
+  report_fatal_error("SPEX64 eliminateFrameIndex not implemented yet");
 }

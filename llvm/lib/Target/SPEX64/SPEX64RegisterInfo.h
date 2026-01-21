@@ -17,6 +17,11 @@ public:
   Register getFrameRegister(const MachineFunction &MF) const override;
 
   Register getStackRegister(const MachineFunction &MF) const;
+
+  const MCPhysReg *getCalleeSavedRegs(const MachineFunction *MF) const override;
+  bool eliminateFrameIndex(MachineBasicBlock::iterator MI, int SPAdj,
+                           unsigned FIOperandNum,
+                           RegScavenger *RS) const override;
 };
 
 } // namespace llvm

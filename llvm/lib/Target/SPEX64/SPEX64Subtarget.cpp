@@ -8,7 +8,7 @@ using namespace llvm;
 
 SPEX64Subtarget::SPEX64Subtarget(const Triple &TT, StringRef CPU, StringRef FS)
     : SPEX64GenSubtargetInfo(TT, CPU, CPU, FS) {
-  ParseSubtargetFeatures(CPU, FS);
+  ParseSubtargetFeatures(CPU, CPU, FS);
 }
 
 const TargetRegisterInfo *SPEX64Subtarget::getRegisterInfo() const {
