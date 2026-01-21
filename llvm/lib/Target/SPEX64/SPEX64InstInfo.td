@@ -326,11 +326,11 @@ multiclass SPEX64_LS_R6_SZS<bits<12> opc, string mn, bits<1> x1> {
 }
 
 defm LDZ : SPEX64_LS_NO_R6_SZS<0x700, "ldz", 0>;
-defm LDZ_R : SPEX64_LS_R6_SZS<0x700, "ldz-r", 1>;
+defm LDZ_R : SPEX64_LS_R6_SZS<0x700, "ldz", 1>;
 defm LDS : SPEX64_LS_NO_R6_SZS<0x701, "lds", 0>;
-defm LDS_R : SPEX64_LS_R6_SZS<0x701, "lds-r", 1>;
+defm LDS_R : SPEX64_LS_R6_SZS<0x701, "lds", 1>;
 defm ST : SPEX64_LS_NO_R6_SZS<0x702, "st", 0>;
-defm ST_R : SPEX64_LS_R6_SZS<0x702, "st-r", 1>;
+defm ST_R : SPEX64_LS_R6_SZS<0x702, "st", 1>;
 
 // Atomic
 def CAS64 : SPEX64Inst<"cas64\t$r6", (outs), (ins GPR:$r6), 0x800, 0, 0b11, 0, 0>;
