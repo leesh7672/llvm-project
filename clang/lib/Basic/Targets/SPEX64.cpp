@@ -85,4 +85,23 @@ BuiltinVaListKind SPEX64TargetInfo::getBuiltinVaListKind() const {
   return TargetInfo::VoidPtrBuiltinVaList;
 }
 
+llvm::SmallVector<Builtin::InfosShard>
+SPEX64TargetInfo::getTargetBuiltins() const {
+  return {};
+}
+
+std::string_view SPEX64TargetInfo::getClobbers() const { return ""; }
+
+ArrayRef<const char *> SPEX64TargetInfo::getGCCRegNames() const { return {}; }
+
+bool SPEX64TargetInfo::validateAsmConstraint(
+    const char *&Name, TargetInfo::ConstraintInfo &Info) const {
+  return true;
+}
+
+ArrayRef<TargetInfo::GCCRegAlias>
+SPEX64TargetInfo::getGCCRegAliases() const {
+  return {};
+}
+
 } // namespace targets

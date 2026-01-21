@@ -22,7 +22,18 @@ public:
   void getTargetDefines(const LangOptions &Opts,
                         MacroBuilder &Builder) const override;
 
+  llvm::SmallVector<Builtin::InfosShard> getTargetBuiltins() const override;
+
+  std::string_view getClobbers() const override;
+
   BuiltinVaListKind getBuiltinVaListKind() const override;
+
+  ArrayRef<const char *> getGCCRegNames() const override;
+
+  bool validateAsmConstraint(const char *&Name,
+                             TargetInfo::ConstraintInfo &info) const override;
+
+  ArrayRef<TargetInfo::GCCRegAlias> getGCCRegAliases() const override;
 };
 
 } // namespace targets
