@@ -37,8 +37,8 @@ SPEX64TargetInfo::SPEX64TargetInfo(const llvm::Triple &Triple,
   // If you later introduce variants, hook them here.
   resetDataLayout(
       // Little-endian, ELF mangling, 64-bit pointers.
-      // You can refine (stack alignment, native widths) later.
-      "e-m:e-p:64:64-i64:64-n64-S128");
+      // Keep in sync with llvm/lib/Target/SPEX64/SPEX64TargetMachineImpl.cpp.
+      "e-m:e-p:64:64-i64:64-n8:16:32:64-S128");
 
   // Fundamental sizes
   PointerWidth = 64;
