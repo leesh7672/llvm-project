@@ -10,7 +10,7 @@ class SPEX64AsmPrinter final : public AsmPrinter {
 public:
   SPEX64AsmPrinter(TargetMachine &TM, std::unique_ptr<MCStreamer> Streamer)
       : AsmPrinter(TM, std::move(Streamer)) {}
-  ~SPEX64AsmPrinter();
+  ~SPEX64AsmPrinter() override;
 
   StringRef getPassName() const override { return "SPEX64 Assembly Printer"; }
 
