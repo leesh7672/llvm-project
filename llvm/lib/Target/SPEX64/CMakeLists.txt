@@ -23,6 +23,7 @@ add_llvm_target(SPEX64CodeGen
   SPEX64InstrInfo.cpp
   SPEX64RegisterInfo.cpp
   SPEX64FrameLowering.cpp
+  SPEX64ISelDAGToDAG.cpp
   SPEX64ISelLowering.cpp
 )
 
