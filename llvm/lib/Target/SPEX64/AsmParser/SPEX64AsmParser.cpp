@@ -160,7 +160,13 @@ class SPEX64AsmParser : public MCTargetAsmParser {
         getLexer().getTok().getIdentifier().lower() != "rx") {
       return Error(StartLoc, "expected rx in memory operand");
     }
+    AsmToken const &RegTok = getParser().getTok();
+    MCRegister Reg = MatchRegisterName(RegTok.getIdentifier());
+    if (Reg == SPEX64::NoRegister)
+      return Error(StartLoc, "invalid register in memory operand");
     getLexer().Lex(); // eat rx
+    Operands.push_back(
+        SPEX64Operand::createReg(Reg, RegTok.getLoc(), RegTok.getEndLoc()));
 
     if (getLexer().is(AsmToken::RBrac)) {
       getLexer().Lex();
