@@ -9,7 +9,7 @@ namespace {
 class SPEX64ELFObjectWriter : public MCELFObjectTargetWriter {
 public:
   explicit SPEX64ELFObjectWriter(uint8_t OSABI)
-      : MCELFObjectTargetWriter(/*Is64Bit=*/true, OSABI, ELF::EM_NONE,
+      : MCELFObjectTargetWriter(/*Is64Bit=*/true, OSABI, ELF::EM_SPEX64,
                                 /*HasRelocationAddend=*/true) {}
   ~SPEX64ELFObjectWriter() override = default;
 
