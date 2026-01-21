@@ -3,10 +3,11 @@
 
 #include "SPEX64RegisterInfo.h"
 
-#define GET_INSTRINFO_HEADER
-#include "SPEX64GenInstrInfo.inc"
 #include "llvm/CodeGen/TargetInstrInfo.h"
 #include "llvm/CodeGen/TargetSubtargetInfo.h"
+
+#define GET_INSTRINFO_HEADER
+#include "SPEX64GenInstrInfo.inc"
 
 namespace llvm {
 
@@ -14,7 +15,7 @@ class SPEX64InstrInfo : public SPEX64GenInstrInfo {
   SPEX64RegisterInfo RI;
 
 public:
-  SPEX64InstrInfo();
+  SPEX64InstrInfo(const TargetSubtargetInfo &STI);
   const SPEX64RegisterInfo &getRegisterInfo() const { return RI; }
 };
 

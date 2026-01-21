@@ -7,5 +7,5 @@ using namespace llvm;
 
 SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
                                            const SPEX64Subtarget &ST)
-    : TargetLowering(TM, ST) {
+    : TargetLowering(TM, ST), ST(ST) {
 }
