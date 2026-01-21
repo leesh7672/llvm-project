@@ -12,8 +12,7 @@
 #include "clang/Basic/TargetBuiltins.h"
 #include "llvm/ADT/StringRef.h"
 
-using namespace clang;
-
+namespace clang {
 namespace targets {
 
 void SPEX64TargetInfo::getTargetDefines(const LangOptions &Opts,
@@ -105,3 +104,4 @@ SPEX64TargetInfo::getGCCRegAliases() const {
 }
 
 } // namespace targets
+} // namespace clang
