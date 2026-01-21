@@ -14,8 +14,7 @@ public:
   ~SPEX64ELFObjectWriter() override = default;
 
 protected:
-  unsigned getRelocType(const MCFixup &, const MCValue &,
-                        bool) const override {
+  unsigned getRelocType(const MCFixup &, const MCValue &, bool) const override {
     return 0;
   }
 };

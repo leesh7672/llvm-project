@@ -1,5 +1,5 @@
-#include "../TargetInfo/SPEX64TargetInfo.h"
 #include "SPEX64MCTargetDesc.h"
+#include "../TargetInfo/SPEX64TargetInfo.h"
 #include "SPEX64InstPrinter.h"
 
 #include "llvm/MC/MCAsmInfo.h"
@@ -65,5 +65,4 @@ extern "C" void LLVMInitializeSPEX64TargetMC() {
 
   TargetRegistry::RegisterMCCodeEmitter(T, createSPEX64MCCodeEmitter);
   TargetRegistry::RegisterMCAsmBackend(T, createSPEX64AsmBackend);
-
 }
