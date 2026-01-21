@@ -1,7 +1,7 @@
 #include "SPEX64MCTargetDesc.h"
 #include "llvm/MC/MCAsmBackend.h"
-#include "llvm/MC/MCFixup.h"
 #include "llvm/MC/MCELFObjectWriter.h"
+#include "llvm/MC/MCFixup.h"
 #include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/MCTargetOptions.h"
 #include "llvm/MC/TargetRegistry.h"

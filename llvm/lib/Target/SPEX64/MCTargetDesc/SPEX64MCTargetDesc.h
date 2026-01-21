@@ -21,11 +21,13 @@ class raw_pwrite_stream;
 
 MCCodeEmitter *createSPEX64MCCodeEmitter(const MCInstrInfo &MCII,
                                          MCContext &Ctx);
-MCInstPrinter *createSPEX64MCInstPrinter(const Triple &T, unsigned SyntaxVariant,
+MCInstPrinter *createSPEX64MCInstPrinter(const Triple &T,
+                                         unsigned SyntaxVariant,
                                          const MCAsmInfo &MAI,
                                          const MCInstrInfo &MII,
                                          const MCRegisterInfo &MRI);
-MCAsmBackend *createSPEX64AsmBackend(const Target &T, const MCSubtargetInfo &STI,
+MCAsmBackend *createSPEX64AsmBackend(const Target &T,
+                                     const MCSubtargetInfo &STI,
                                      const MCRegisterInfo &MRI,
                                      const MCTargetOptions &Options);
 std::unique_ptr<MCObjectWriter>

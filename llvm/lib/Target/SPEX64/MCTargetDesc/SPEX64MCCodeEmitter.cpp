@@ -37,9 +37,10 @@ public:
                          const MCSubtargetInfo &STI) const override;
 };
 
-unsigned SPEX64MCCodeEmitter::getMachineOpValue(
-    const MCInst &MI, const MCOperand &MO, SmallVectorImpl<MCFixup> &Fixups,
-    const MCSubtargetInfo &STI) const {
+unsigned
+SPEX64MCCodeEmitter::getMachineOpValue(const MCInst &MI, const MCOperand &MO,
+                                       SmallVectorImpl<MCFixup> &Fixups,
+                                       const MCSubtargetInfo &STI) const {
   (void)MI;
   (void)Fixups;
   (void)STI;
@@ -52,9 +53,10 @@ unsigned SPEX64MCCodeEmitter::getMachineOpValue(
   return 0;
 }
 
-void SPEX64MCCodeEmitter::encodeInstruction(
-    const MCInst &MI, SmallVectorImpl<char> &CB,
-    SmallVectorImpl<MCFixup> &Fixups, const MCSubtargetInfo &STI) const {
+void SPEX64MCCodeEmitter::encodeInstruction(const MCInst &MI,
+                                            SmallVectorImpl<char> &CB,
+                                            SmallVectorImpl<MCFixup> &Fixups,
+                                            const MCSubtargetInfo &STI) const {
   uint32_t W0 = static_cast<uint32_t>(getBinaryCodeForInstr(MI, Fixups, STI));
   unsigned Size = 4;
   if (W0 & (1u << 16)) {

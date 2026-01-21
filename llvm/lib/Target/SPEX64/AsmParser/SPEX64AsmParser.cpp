@@ -10,9 +10,9 @@
 #include "../TargetInfo/SPEX64TargetInfo.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCExpr.h"
-#include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCInst.h"
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/MC/MCParser/AsmLexer.h"
@@ -103,8 +103,8 @@ public:
     return Op;
   }
 
-  static std::unique_ptr<SPEX64Operand> createImm(const MCExpr *Imm,
-                                                  SMLoc StartLoc, SMLoc EndLoc) {
+  static std::unique_ptr<SPEX64Operand>
+  createImm(const MCExpr *Imm, SMLoc StartLoc, SMLoc EndLoc) {
     auto Op = std::make_unique<SPEX64Operand>(k_Imm, StartLoc, EndLoc);
     Op->Imm = Imm;
     return Op;
@@ -178,13 +178,11 @@ class SPEX64AsmParser : public MCTargetAsmParser {
 
     bool IsMinus = false;
     if (getLexer().is(AsmToken::Plus)) {
-      Operands.push_back(
-          SPEX64Operand::createToken("+", getLexer().getLoc()));
+      Operands.push_back(SPEX64Operand::createToken("+", getLexer().getLoc()));
       getLexer().Lex();
     } else if (getLexer().is(AsmToken::Minus)) {
       IsMinus = true;
-      Operands.push_back(
-          SPEX64Operand::createToken("+", getLexer().getLoc()));
+      Operands.push_back(SPEX64Operand::createToken("+", getLexer().getLoc()));
       getLexer().Lex();
     } else {
       return Error(StartLoc, "expected + or - in memory operand");
@@ -219,7 +217,8 @@ class SPEX64AsmParser : public MCTargetAsmParser {
       Out.emitInstruction(Inst, getSTI());
       return false;
     case Match_MissingFeature:
-      return Error(IDLoc, "instruction requires a feature not currently enabled");
+      return Error(IDLoc,
+                   "instruction requires a feature not currently enabled");
     case Match_InvalidOperand:
       return Error(IDLoc, "invalid operand");
     case Match_InvalidTiedOperand:
@@ -229,8 +228,7 @@ class SPEX64AsmParser : public MCTargetAsmParser {
     }
   }
 
-  bool parseRegister(MCRegister &Reg, SMLoc &StartLoc,
-                     SMLoc &EndLoc) override {
+  bool parseRegister(MCRegister &Reg, SMLoc &StartLoc, SMLoc &EndLoc) override {
     ParseStatus Res = tryParseRegister(Reg, StartLoc, EndLoc);
     if (Res.isFailure())
       return Error(StartLoc, "invalid register name");
@@ -270,8 +268,8 @@ class SPEX64AsmParser : public MCTargetAsmParser {
     }
 
     if (getLexer().is(AsmToken::Hash) || getLexer().is(AsmToken::At) ||
-        getLexer().is(AsmToken::Integer) || getLexer().is(AsmToken::Identifier) ||
-        getLexer().is(AsmToken::Minus)) {
+        getLexer().is(AsmToken::Integer) ||
+        getLexer().is(AsmToken::Identifier) || getLexer().is(AsmToken::Minus)) {
       return parseImm(Operands);
     }
 

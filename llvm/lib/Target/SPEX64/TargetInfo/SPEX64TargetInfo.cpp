@@ -8,6 +8,6 @@ Target &llvm::getTheSPEX64Target() {
 }
 
 extern "C" void LLVMInitializeSPEX64TargetInfo() {
-  RegisterTarget<Triple::spex64, /*HasJIT=*/false> X(getTheSPEX64Target(),
-                                                     "spex64", "SPEX64", "SPEX64");
+  RegisterTarget<Triple::spex64, /*HasJIT=*/false> X(
+      getTheSPEX64Target(), "spex64", "SPEX64", "SPEX64");
 }
