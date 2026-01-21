@@ -46,13 +46,13 @@ class SPEX64Inst<string asmstr, dag outs, dag ins, bits<12> opc, bits<1> x1,
   bits<64> imm;
   bits<64> target;
 
-  let Inst{31-20} = opc;
-  let Inst{19}    = x1;
-  let Inst{18-17} = sz2;
-  let Inst{16}    = i1;
-  let Inst{15}    = i64;
-  let Inst{14-9}  = r6;
-  let Inst{8-0}   = K9;
+  let Inst{0-11} = opc;
+  let Inst{12}    = x1;
+  let Inst{13-14} = sz2;
+  let Inst{15}    = i1;
+  let Inst{16}    = i64;
+  let Inst{17-22}  = r6;
+  let Inst{23-31}   = K9;
 
   let K9 = 0;
   let imm = 0;
