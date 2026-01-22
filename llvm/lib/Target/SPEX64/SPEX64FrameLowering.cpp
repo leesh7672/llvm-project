@@ -22,10 +22,10 @@ SPEX64FrameLowering::SPEX64FrameLowering()
                           /*TransientStackAlignment=*/Align(16)) {}
 
 bool SPEX64FrameLowering::hasFPImpl(const MachineFunction &MF) const {
-  // Minimal bring-up: no FP yet.
-  // If you later support variable-sized objects / dynamic allocas,
-  // return true when MF.getFrameInfo().hasVarSizedObjects().
-  return false;
+  const MachineFrameInfo &MFI = MF.getFrameInfo();
+
+  return MFI.hasVarSizedObjects() || MFI.isFrameAddressTaken() ||
+         MFI.hasStackMap() || MFI.hasPatchPoint() || MFI.hasOpaqueSPAdjustment();
 }
 
 void SPEX64FrameLowering::emitPrologue(MachineFunction &MF,
