@@ -1,8 +1,6 @@
 #include "SPEX64AsmPrinter.h"
 #include "TargetInfo/SPEX64TargetInfo.h"
 #include "llvm/MC/TargetRegistry.h"
-#include "llvm/Support/ErrorHandling.h"
-#include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
 
 using namespace llvm;

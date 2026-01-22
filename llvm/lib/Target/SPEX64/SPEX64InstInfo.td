@@ -92,6 +92,7 @@ def SPEX64InstrInfo : InstrInfo;
 // SYS opcodes (0x000-0x00B)
 def NOP     : SPEX64InstNoR6<"nop", (outs), (ins), 0x000, 0, 0b00, 0, 0>;
 def HLT     : SPEX64InstNoR6<"hlt", (outs), (ins), 0x001, 0, 0b00, 0, 0>;
+let isReturn = 1, isTerminator = 1 in
 def RET     : SPEX64InstNoR6<"ret", (outs), (ins), 0x002, 0, 0b00, 0, 0>;
 def SYSCALL : SPEX64InstNoR6<"syscall", (outs), (ins), 0x003, 0, 0b00, 0, 0>;
 def TRAP    : SPEX64InstNoR6<"trap", (outs), (ins), 0x004, 0, 0b00, 0, 0>;
@@ -210,10 +211,14 @@ def JMP64 : SPEX64InstNoR6<"jmp\t$target", (outs), (ins SPEX64Imm64:$target),
                            0x200, 0, 0b00, 1, 1> {
 }
 
+let isCall = 1 in
 def CALL_R : SPEX64Inst<"call\t$r6", (outs), (ins GPR:$r6), 0x203, 0, 0b00, 0, 0>;
+
+let isCall = 1 in
 def CALL32 : SPEX64InstNoR6<"call\t$target", (outs), (ins SPEX64Imm32:$target),
                             0x203, 0, 0b00, 1, 0> {
 }
+let isCall = 1 in
 def CALL64 : SPEX64InstNoR6<"call\t$target", (outs), (ins SPEX64Imm64:$target),
                             0x203, 0, 0b00, 1, 1> {
 }
