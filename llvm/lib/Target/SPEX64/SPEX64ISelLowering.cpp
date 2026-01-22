@@ -26,8 +26,8 @@ SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
   setOperationAction(ISD::Constant, MVT::i16, Promote);
   setOperationAction(ISD::ZERO_EXTEND, MVT::i8, Expand);
   setOperationAction(ISD::ZERO_EXTEND, MVT::i16, Expand);
-  setOperationAction(ISD::ZERO_EXTEND, MVT::i32, Expand);
-  setOperationAction(ISD::ZERO_EXTEND, MVT::i64, Expand);
+  setOperationAction(ISD::ZERO_EXTEND, MVT::i32, Custom);
+  setOperationAction(ISD::ZERO_EXTEND, MVT::i64, Custom);
   setOperationAction(ISD::SIGN_EXTEND, MVT::i8, Expand);
   setOperationAction(ISD::SIGN_EXTEND, MVT::i16, Expand);
   setOperationAction(ISD::SIGN_EXTEND, MVT::i32, Expand);
@@ -85,6 +85,21 @@ SDValue SPEX64TargetLowering::LowerOperation(SDValue Op,
                       cast<CondCodeSDNode>(Op.getOperand(1))->get(),
                       Op.getOperand(2), Op.getOperand(3), Op.getOperand(4),
                       SDLoc(Op), DAG);
+  case ISD::ZERO_EXTEND: {
+    // Prefer a single extending load when we see zext(load i8/i16/i32).
+    SDValue Src = Op.getOperand(0);
+    if (auto *LN = dyn_cast<LoadSDNode>(Src)) {
+      EVT VT = Op.getValueType();
+      EVT MemVT = LN->getMemoryVT();
+      if ((VT == MVT::i32 || VT == MVT::i64) &&
+          (MemVT == MVT::i8 || MemVT == MVT::i16 || MemVT == MVT::i32)) {
+        // Keep the original memory operand information.
+        return DAG.getExtLoad(ISD::ZEXTLOAD, SDLoc(Op), VT, LN->getChain(),
+                              LN->getBasePtr(), MemVT, LN->getMemOperand());
+      }
+    }
+    break;
+  }
   default:
     break;
   }
