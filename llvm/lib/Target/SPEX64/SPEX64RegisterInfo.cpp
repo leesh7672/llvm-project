@@ -77,6 +77,12 @@ SPEX64RegisterInfo::getCalleeSavedRegs(const MachineFunction *) const {
   return CSR_SPEX64_SaveList;
 }
 
+const uint32_t *
+SPEX64RegisterInfo::getCallPreservedMask(const MachineFunction &,
+                                         CallingConv::ID) const {
+  return CSR_SPEX64_RegMask;
+}
+
 bool SPEX64RegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator MI,
                                              int, unsigned FIOperandNum,
                                              RegScavenger *) const {

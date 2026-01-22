@@ -80,6 +80,10 @@ bool SPEX64InstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
   DebugLoc DL = MI.getDebugLoc();
 
   switch (MI.getOpcode()) {
+  case SPEX64::ADJCALLSTACKDOWN:
+  case SPEX64::ADJCALLSTACKUP:
+    MI.eraseFromParent();
+    return true;
   case SPEX64::CALL: {
     MachineInstrBuilder MIB = BuildMI(MBB, I, DL, get(SPEX64::CALL64));
     for (const MachineOperand &MO : MI.operands())
@@ -323,6 +327,33 @@ bool SPEX64InstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
       break;
     default:
       llvm_unreachable("unexpected LDZ pseudo");
+    }
+    auto LdMI = BuildMI(MBB, I, DL, get(LdOpc), Dst);
+    if (Off != 0)
+      LdMI.addImm(Off);
+    MI.eraseFromParent();
+    return true;
+  }
+  case SPEX64::PSEUDO_LDS8:
+  case SPEX64::PSEUDO_LDS16:
+  case SPEX64::PSEUDO_LDS32: {
+    Register Dst = MI.getOperand(0).getReg();
+    Register Base = MI.getOperand(1).getReg();
+    int64_t Off = MI.getOperand(2).getImm();
+    BuildMI(MBB, I, DL, get(SPEX64::MOVMOV64)).addReg(Base);
+    unsigned LdOpc = 0;
+    switch (MI.getOpcode()) {
+    case SPEX64::PSEUDO_LDS8:
+      LdOpc = Off == 0 ? SPEX64::LDS_R8 : SPEX64::LDS_R8_I32;
+      break;
+    case SPEX64::PSEUDO_LDS16:
+      LdOpc = Off == 0 ? SPEX64::LDS_R16 : SPEX64::LDS_R16_I32;
+      break;
+    case SPEX64::PSEUDO_LDS32:
+      LdOpc = Off == 0 ? SPEX64::LDS_R32 : SPEX64::LDS_R32_I32;
+      break;
+    default:
+      llvm_unreachable("unexpected LDS pseudo");
     }
     auto LdMI = BuildMI(MBB, I, DL, get(LdOpc), Dst);
     if (Off != 0)

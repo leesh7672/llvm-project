@@ -1,6 +1,7 @@
 #include "SPEX64ISelDAGToDAG.h"
 #include "SPEX64TargetMachine.h"
 
+#include "llvm/CodeGen/RegAllocRegistry.h"
 #include "llvm/CodeGen/TargetPassConfig.h"
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/Target/TargetOptions.h"
@@ -42,6 +43,9 @@ public:
     return false;
   }
 
+  FunctionPass *createTargetRegisterAllocator(bool) override {
+    return createGreedyRegisterAllocator();
+  }
 };
 } // namespace
 

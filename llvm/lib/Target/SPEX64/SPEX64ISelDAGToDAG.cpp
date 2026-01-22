@@ -103,14 +103,13 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
     SDValue Glue;
 
     SmallVector<SDValue, 8> Ops;
-    Ops.push_back(Callee);
-
-    for (unsigned I = 2, E = Node->getNumOperands(); I != E; ++I) {
+    for (unsigned I = 1, E = Node->getNumOperands(); I != E; ++I) {
       SDValue Op = Node->getOperand(I);
       if (Op.getValueType() == MVT::Glue) {
         Glue = Op;
         break;
       }
+      Ops.push_back(Op);
     }
 
     Ops.push_back(Chain);
@@ -150,20 +149,32 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
     auto *CCNode = cast<CondCodeSDNode>(CC);
     SDValue CCVal = CurDAG->getTargetConstant(CCNode->get(), DL, MVT::i32);
 
+    auto MaterializeConst = [&](SDValue V) -> SDValue {
+      auto *C = dyn_cast<ConstantSDNode>(V);
+      if (!C)
+        return V;
+      unsigned Opc =
+          V.getValueType() == MVT::i32 ? SPEX64::PSEUDO_LI32 : SPEX64::PSEUDO_LI64;
+      SDValue Imm = CurDAG->getTargetConstant(C->getSExtValue(), DL,
+                                              V.getValueType());
+      return SDValue(CurDAG->getMachineNode(Opc, DL, V.getValueType(), Imm), 0);
+    };
+
+    LHS = MaterializeConst(LHS);
+    RHS = MaterializeConst(RHS);
+
     unsigned BrOpc = LHS.getValueType() == MVT::i32
                          ? SPEX64::PSEUDO_BR_CC32
                          : SPEX64::PSEUDO_BR_CC64;
-    SDValue Ops[] = {Chain, LHS, RHS, Dest, CCVal};
-    SDNode *Br = CurDAG->getMachineNode(BrOpc, DL, MVT::Other, Ops);
-    ReplaceNode(Node, Br);
+    SDValue Ops[] = {LHS, RHS, Dest, CCVal, Chain};
+    CurDAG->SelectNodeTo(Node, BrOpc, MVT::Other, Ops);
     return;
   }
   case SPEX64ISD::BR: {
     SDValue Chain = Node->getOperand(0);
     SDValue Dest = Node->getOperand(1);
-    SDNode *Br = CurDAG->getMachineNode(SPEX64::PSEUDO_BR, DL, MVT::Other, Chain,
-                                         Dest);
-    ReplaceNode(Node, Br);
+    SDValue Ops[] = {Dest, Chain};
+    CurDAG->SelectNodeTo(Node, SPEX64::PSEUDO_BR, MVT::Other, Ops);
     return;
   }
   default:

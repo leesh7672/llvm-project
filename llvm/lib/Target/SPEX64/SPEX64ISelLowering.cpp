@@ -2,6 +2,7 @@
 #include "SPEX64.h"
 #include "SPEX64Subtarget.h"
 #include "SPEX64TargetMachine.h"
+#include "llvm/ADT/APInt.h"
 #include "llvm/CodeGen/CallingConvLower.h"
 #include "llvm/CodeGen/SelectionDAGNodes.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -26,7 +27,7 @@ SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
   setOperationAction(ISD::ZERO_EXTEND, MVT::i8, Expand);
   setOperationAction(ISD::ZERO_EXTEND, MVT::i16, Expand);
   setOperationAction(ISD::ZERO_EXTEND, MVT::i32, Expand);
-  setOperationAction(ISD::ZERO_EXTEND, MVT::i64, Custom);
+  setOperationAction(ISD::ZERO_EXTEND, MVT::i64, Expand);
   setOperationAction(ISD::SIGN_EXTEND, MVT::i8, Expand);
   setOperationAction(ISD::SIGN_EXTEND, MVT::i16, Expand);
   setOperationAction(ISD::SIGN_EXTEND, MVT::i32, Expand);
@@ -34,7 +35,7 @@ SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
   setOperationAction(ISD::ANY_EXTEND, MVT::i8, Expand);
   setOperationAction(ISD::ANY_EXTEND, MVT::i16, Expand);
   setOperationAction(ISD::ANY_EXTEND, MVT::i32, Expand);
-  setOperationAction(ISD::ANY_EXTEND, MVT::i64, Legal);
+  setOperationAction(ISD::ANY_EXTEND, MVT::i64, Expand);
   setOperationAction(ISD::BR, MVT::Other, Custom);
   setOperationAction(ISD::BR_CC, MVT::i8, Custom);
   setOperationAction(ISD::BR_CC, MVT::i16, Custom);
@@ -44,33 +45,39 @@ SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
   setOperationAction(ISD::BRCOND, MVT::Other, Expand);
   setOperationAction(ISD::SETCC, MVT::i32, Expand);
   setOperationAction(ISD::SETCC, MVT::i64, Expand);
+  setOperationAction(ISD::SELECT, MVT::i32, Expand);
+  setOperationAction(ISD::SELECT, MVT::i64, Expand);
   setOperationAction(ISD::SELECT_CC, MVT::i32, Expand);
   setOperationAction(ISD::SELECT_CC, MVT::i64, Expand);
 
   setBooleanContents(ZeroOrOneBooleanContent);
 
+  setTruncStoreAction(MVT::i64, MVT::i32, Expand);
+  setTruncStoreAction(MVT::i64, MVT::i16, Expand);
+  setTruncStoreAction(MVT::i64, MVT::i8, Expand);
+  setTruncStoreAction(MVT::i32, MVT::i16, Expand);
+  setTruncStoreAction(MVT::i32, MVT::i8, Expand);
+  setTruncStoreAction(MVT::i16, MVT::i8, Expand);
+
   setLoadExtAction(ISD::ZEXTLOAD, MVT::i64, MVT::i8, Legal);
   setLoadExtAction(ISD::ZEXTLOAD, MVT::i64, MVT::i16, Legal);
   setLoadExtAction(ISD::ZEXTLOAD, MVT::i64, MVT::i32, Legal);
+  setLoadExtAction(ISD::ZEXTLOAD, MVT::i32, MVT::i8, Legal);
+  setLoadExtAction(ISD::ZEXTLOAD, MVT::i32, MVT::i16, Legal);
+  setLoadExtAction(ISD::EXTLOAD, MVT::i64, MVT::i8, Legal);
+  setLoadExtAction(ISD::EXTLOAD, MVT::i64, MVT::i16, Legal);
+  setLoadExtAction(ISD::EXTLOAD, MVT::i64, MVT::i32, Legal);
+  setLoadExtAction(ISD::EXTLOAD, MVT::i32, MVT::i8, Legal);
+  setLoadExtAction(ISD::EXTLOAD, MVT::i32, MVT::i16, Legal);
+  setLoadExtAction(ISD::SEXTLOAD, MVT::i64, MVT::i8, Legal);
+  setLoadExtAction(ISD::SEXTLOAD, MVT::i64, MVT::i16, Legal);
+  setLoadExtAction(ISD::SEXTLOAD, MVT::i64, MVT::i32, Legal);
+
 }
 
 SDValue SPEX64TargetLowering::LowerOperation(SDValue Op,
                                              SelectionDAG &DAG) const {
   switch (Op.getOpcode()) {
-  case ISD::ZERO_EXTEND: {
-    SDLoc DL(Op);
-    SDValue Src = Op.getOperand(0);
-    EVT SrcVT = Src.getValueType();
-    if (Op.getValueType() != MVT::i64)
-      break;
-    unsigned SrcBits = SrcVT.getSizeInBits();
-    if (SrcBits == 0 || SrcBits >= 64)
-      return Src;
-    SDValue Ext = DAG.getNode(ISD::ANY_EXTEND, DL, MVT::i64, Src);
-    uint64_t Mask = SrcBits == 64 ? ~0ULL : ((1ULL << SrcBits) - 1);
-    return DAG.getNode(ISD::AND, DL, MVT::i64, Ext,
-                       DAG.getConstant(Mask, DL, MVT::i64));
-  }
   case ISD::BR:
     return LowerBR(Op.getOperand(0), Op.getOperand(1), SDLoc(Op), DAG);
   case ISD::BR_CC:
@@ -150,16 +157,20 @@ SDValue SPEX64TargetLowering::LowerBR_CC(SDValue Chain, ISD::CondCode CC,
                                          SDValue LHS, SDValue RHS,
                                          SDValue Dest, const SDLoc &DL,
                                          SelectionDAG &DAG) const {
-  auto ExtendToI64 = [&](SDValue V) -> SDValue {
-    if (V.getValueType() == MVT::i64)
+  auto ExtendTo = [&](SDValue V, MVT VT) -> SDValue {
+    if (V.getValueType() == VT)
       return V;
     bool IsSigned = ISD::isSignedIntSetCC(CC);
     unsigned Opcode = IsSigned ? ISD::SIGN_EXTEND : ISD::ZERO_EXTEND;
-    return DAG.getNode(Opcode, DL, MVT::i64, V);
+    return DAG.getNode(Opcode, DL, VT, V);
   };
 
-  LHS = ExtendToI64(LHS);
-  RHS = ExtendToI64(RHS);
+  MVT VT = (LHS.getValueType().getSizeInBits() <= 32 &&
+            RHS.getValueType().getSizeInBits() <= 32)
+               ? MVT::i32
+               : MVT::i64;
+  LHS = ExtendTo(LHS, VT);
+  RHS = ExtendTo(RHS, VT);
 
   SDValue CCVal = DAG.getCondCode(CC);
   return DAG.getNode(SPEX64ISD::BR_CC, DL, MVT::Other, Chain, LHS, RHS, CCVal,
@@ -186,8 +197,8 @@ SDValue SPEX64TargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   if (CallConv != CallingConv::C && CallConv != CallingConv::Fast)
     report_fatal_error("SPEX64: unsupported calling convention");
 
-  if (!CLI.Outs.empty())
-    report_fatal_error("SPEX64: variadic or struct arguments not supported");
+  if (CLI.IsVarArg)
+    report_fatal_error("SPEX64: variadic arguments not supported");
 
   SmallVector<CCValAssign, 16> ArgLocs;
   CCState CCInfo(CallConv, CLI.IsVarArg, DAG.getMachineFunction(), ArgLocs,
