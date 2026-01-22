@@ -80,6 +80,20 @@ bool SPEX64InstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
   DebugLoc DL = MI.getDebugLoc();
 
   switch (MI.getOpcode()) {
+  case SPEX64::CALL: {
+    MachineInstrBuilder MIB = BuildMI(MBB, I, DL, get(SPEX64::CALL64));
+    for (const MachineOperand &MO : MI.operands())
+      MIB.add(MO);
+    MI.eraseFromParent();
+    return true;
+  }
+  case SPEX64::CALLR: {
+    MachineInstrBuilder MIB = BuildMI(MBB, I, DL, get(SPEX64::CALL_R));
+    for (const MachineOperand &MO : MI.operands())
+      MIB.add(MO);
+    MI.eraseFromParent();
+    return true;
+  }
   case SPEX64::PSEUDO_LI8: {
     Register Dst = MI.getOperand(0).getReg();
     int64_t Imm = MI.getOperand(1).getImm();

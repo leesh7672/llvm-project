@@ -1,5 +1,23 @@
 include "SPEX64RegisterInfo.td"
 
+// -------------------------------------------------- //
+// Instruction Operands and Patterns
+// -------------------------------------------------- //
+
+def SDT_SPEX64CallSeqStart : SDCallSeqStart<[SDTCisVT<0, i32>,
+                                             SDTCisVT<1, i32>]>;
+def SDT_SPEX64CallSeqEnd   : SDCallSeqEnd<[SDTCisVT<0, i32>,
+                                           SDTCisVT<1, i32>]>;
+def SDT_SPEX64Call         : SDTypeProfile<0, -1, [SDTCisPtrTy<0>]>;
+
+def Call         : SDNode<"SPEX64ISD::CALL", SDT_SPEX64Call,
+                          [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue,
+                           SDNPVariadic]>;
+def CallSeqStart : SDNode<"ISD::CALLSEQ_START", SDT_SPEX64CallSeqStart,
+                          [SDNPHasChain, SDNPOutGlue]>;
+def CallSeqEnd   : SDNode<"ISD::CALLSEQ_END", SDT_SPEX64CallSeqEnd,
+                          [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue]>;
+
 def SPEX64Imm9AsmOperand : AsmOperandClass {
   let Name = "SPEX64Imm9";
   let ParserMethod = "parseImm";
@@ -88,6 +106,26 @@ class SPEX64BCCInst<string asmstr, dag outs, dag ins, bits<9> k9val,
 }
 
 def SPEX64InstrInfo : InstrInfo;
+
+class Pseudo<dag outs, dag ins, string asmstr, list<dag> pattern>
+    : Instruction {
+  let OutOperandList = outs;
+  let InOperandList = ins;
+  let AsmString = asmstr;
+  let Pattern = pattern;
+  let Namespace = "SPEX64";
+  let isPseudo = 1;
+}
+
+def ADJCALLSTACKDOWN : Pseudo<(outs), (ins i32imm:$amt1, i32imm:$amt2),
+                              "#ADJCALLSTACKDOWN $amt1, $amt2", []>;
+def ADJCALLSTACKUP : Pseudo<(outs), (ins i32imm:$amt1, i32imm:$amt2),
+                            "#ADJCALLSTACKUP $amt1, $amt2", []>;
+
+def : Pat<(CallSeqStart timm:$amt1, timm:$amt2),
+          (ADJCALLSTACKDOWN timm:$amt1, timm:$amt2)>;
+def : Pat<(CallSeqEnd timm:$amt1, timm:$amt2),
+          (ADJCALLSTACKUP timm:$amt1, timm:$amt2)>;
 
 // SYS opcodes (0x000-0x00B)
 def NOP     : SPEX64InstNoR6<"nop", (outs), (ins), 0x000, 0, 0b00, 0, 0>;
@@ -222,6 +260,14 @@ let isCall = 1 in
 def CALL64 : SPEX64InstNoR6<"call\t$target", (outs), (ins SPEX64Imm64:$target),
                             0x203, 0, 0b00, 1, 1> {
 }
+
+let isCall = 1, isCodeGenOnly = 1 in
+def CALL : Pseudo<(outs), (ins SPEX64Imm64:$target), "", []>;
+let isCall = 1, isCodeGenOnly = 1 in
+def CALLR : Pseudo<(outs), (ins GPR:$r6), "", [(Call GPR:$r6)]>;
+
+def : Pat<(Call tglobaladdr:$dst), (CALL tglobaladdr:$dst)>;
+def : Pat<(Call texternalsym:$dst), (CALL texternalsym:$dst)>;
 
 def SP_RX : SPEX64Inst<"sp\t$r6", (outs), (ins GPR:$r6), 0x206, 0, 0b00, 0, 0>;
 def SP32 : SPEX64Inst<"sp\t$r6, $target", (outs),

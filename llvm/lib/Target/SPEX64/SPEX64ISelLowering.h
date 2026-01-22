@@ -48,7 +48,7 @@ public:
                     SmallVectorImpl<SDValue> &InVals) const override;
 
 private:
-  SDValue lowerCallResult(SDValue Chain, const SDLoc &DL,
+  SDValue lowerCallResult(SDValue Chain, SDValue InGlue, const SDLoc &DL,
                           const SmallVectorImpl<ISD::InputArg> &Ins,
                           SelectionDAG &DAG, SmallVectorImpl<SDValue> &InVals) const;
 };

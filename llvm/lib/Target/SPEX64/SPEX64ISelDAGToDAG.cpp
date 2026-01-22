@@ -97,6 +97,36 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
   SDLoc DL(Node);
 
   switch (Node->getOpcode()) {
+  case SPEX64ISD::CALL: {
+    SDValue Chain = Node->getOperand(0);
+    SDValue Callee = Node->getOperand(1);
+    SDValue Glue;
+
+    SmallVector<SDValue, 8> Ops;
+    Ops.push_back(Callee);
+
+    for (unsigned I = 2, E = Node->getNumOperands(); I != E; ++I) {
+      SDValue Op = Node->getOperand(I);
+      if (Op.getValueType() == MVT::Glue) {
+        Glue = Op;
+        break;
+      }
+    }
+
+    Ops.push_back(Chain);
+
+    unsigned CallOpc = SPEX64::CALL;
+    if (Callee.getOpcode() == ISD::Register)
+      CallOpc = SPEX64::CALLR;
+
+    if (Glue.getNode())
+      Ops.push_back(Glue);
+
+    SDNode *Call =
+        CurDAG->getMachineNode(CallOpc, DL, MVT::Other, MVT::Glue, Ops);
+    ReplaceNode(Node, Call);
+    return;
+  }
   case SPEX64ISD::RET: {
     SDValue Chain = Node->getOperand(0);
     if (Node->getNumOperands() > 1) {

@@ -80,5 +80,15 @@ SPEX64RegisterInfo::getCalleeSavedRegs(const MachineFunction *) const {
 bool SPEX64RegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator MI,
                                              int, unsigned FIOperandNum,
                                              RegScavenger *) const {
-  report_fatal_error("SPEX64 eliminateFrameIndex not implemented yet");
+  MachineFunction &MF = *MI->getParent()->getParent();
+  const MachineFrameInfo &MFI = MF.getFrameInfo();
+
+  int FrameIndex = MI->getOperand(FIOperandNum).getIndex();
+  int64_t Offset = MFI.getObjectOffset(FrameIndex) +
+                   MI->getOperand(FIOperandNum + 1).getImm() +
+                   MFI.getStackSize();
+
+  MI->getOperand(FIOperandNum).ChangeToRegister(getFrameRegister(MF), false);
+  MI->getOperand(FIOperandNum + 1).ChangeToImmediate(Offset);
+  return false;
 }
