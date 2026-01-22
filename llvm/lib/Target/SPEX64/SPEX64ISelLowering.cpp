@@ -53,11 +53,43 @@ SDValue SPEX64TargetLowering::LowerOperation(SDValue Op,
 }
 
 SDValue SPEX64TargetLowering::LowerFormalArguments(
-    SDValue Chain, CallingConv::ID, bool,
+    SDValue Chain, CallingConv::ID CallConv, bool IsVarArg,
     const SmallVectorImpl<ISD::InputArg> &Ins, const SDLoc &DL,
     SelectionDAG &DAG, SmallVectorImpl<SDValue> &InVals) const {
-  if (!Ins.empty())
-    report_fatal_error("SPEX64: formal arguments not supported yet");
+  if (CallConv != CallingConv::C && CallConv != CallingConv::Fast)
+    report_fatal_error("SPEX64: unsupported calling convention");
+  if (IsVarArg)
+    report_fatal_error("SPEX64: variadic arguments not supported");
+
+  MachineFunction &MF = DAG.getMachineFunction();
+  MachineRegisterInfo &MRI = MF.getRegInfo();
+
+  SmallVector<CCValAssign, 16> ArgLocs;
+  CCState CCInfo(CallConv, IsVarArg, MF, ArgLocs, *DAG.getContext());
+  CCInfo.AnalyzeFormalArguments(Ins, CC_SPEX64);
+
+  for (const CCValAssign &VA : ArgLocs) {
+    if (!VA.isRegLoc())
+      report_fatal_error("SPEX64: stack arguments not supported yet");
+
+    EVT RegVT = VA.getLocVT();
+    Register VReg = MRI.createVirtualRegister(&SPEX64::GPRRegClass);
+    MRI.addLiveIn(VA.getLocReg(), VReg);
+    SDValue ArgValue = DAG.getCopyFromReg(Chain, DL, VReg, RegVT);
+
+    if (VA.getLocInfo() == CCValAssign::SExt)
+      ArgValue = DAG.getNode(ISD::AssertSext, DL, RegVT, ArgValue,
+                             DAG.getValueType(VA.getValVT()));
+    else if (VA.getLocInfo() == CCValAssign::ZExt)
+      ArgValue = DAG.getNode(ISD::AssertZext, DL, RegVT, ArgValue,
+                             DAG.getValueType(VA.getValVT()));
+
+    if (VA.getLocInfo() != CCValAssign::Full || RegVT != VA.getValVT())
+      ArgValue = DAG.getNode(ISD::TRUNCATE, DL, VA.getValVT(), ArgValue);
+
+    InVals.push_back(ArgValue);
+  }
+
   return Chain;
 }
 
