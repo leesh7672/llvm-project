@@ -11,6 +11,9 @@
 
 using namespace llvm;
 
+extern "C" void LLVMInitializeSPEX64TargetMC();
+
 extern "C" void LLVMInitializeSPEX64Target() {
+  LLVMInitializeSPEX64TargetMC();
   RegisterTargetMachine<SPEX64TargetMachine> X(getTheSPEX64Target());
 }

@@ -37,6 +37,7 @@ public:
     addPass(createSPEX64ISelDag(getSPEX64TM()));
     return false;
   }
+
 };
 } // namespace
 
