@@ -1,5 +1,4 @@
 #include "SPEX64ISelDAGToDAG.h"
-#include "SPEX64Subtarget.h"
 #include "SPEX64TargetMachine.h"
 
 #include "llvm/CodeGen/Passes.h"
@@ -17,7 +16,7 @@ SPEX64TargetMachine::SPEX64TargetMachine(const Target &T, const Triple &TT,
                     Options) {}
 
 namespace {
-class SPEX64PassConfig : public TargetPassConfig {
+class SPEX64PassConfig final : public TargetPassConfig {
 public:
   SPEX64PassConfig(SPEX64TargetMachine &TM, PassManagerBase &PM)
       : TargetPassConfig(TM, PM) {}
@@ -34,5 +33,5 @@ public:
 } // namespace
 
 TargetPassConfig *SPEX64TargetMachine::createPassConfig(PassManagerBase &PM) {
-  return new TargetPassConfig(*this, PM);
+  return new SPEX64PassConfig(*this, PM);
 }
