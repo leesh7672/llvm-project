@@ -551,6 +551,7 @@ class SPEX64PseudoInst<dag outs, dag ins> : Instruction {
 }
 
 let hasSideEffects = 1, isBranch = 1, isTerminator = 1, isBarrier = 1 in {
+  def PSEUDO_BR : SPEX64PseudoInst<(outs), (ins brtarget:$dst)>;
   def PSEUDO_BR_CC32 : SPEX64PseudoInst<(outs),
                                        (ins GPR:$lhs, GPR:$rhs, brtarget:$dst,
                                             i32imm:$cc)>;
@@ -752,3 +753,5 @@ def : Pat<(store i64:$val, (SPEX64Addr i64:$base, SPEX64Imm32Pat:$off)),
           (PSEUDO_ST64 GPR:$val, GPR:$base, imm:$off)>;
 
 defm : RemapAllTargetPseudoPointerOperands<GPR>;
+
+def : Pat<(br bb:$dst), (PSEUDO_BR brtarget:$dst)>;

@@ -7,9 +7,9 @@ using namespace llvm;
 #include "SPEX64GenSubtargetInfo.inc"
 
 SPEX64Subtarget::SPEX64Subtarget(const Triple &TT, StringRef CPU, StringRef FS,
-                                     SPEX64TargetMachine &TM)
+                                 SPEX64TargetMachine &TM)
     : SPEX64GenSubtargetInfo(TT, CPU, CPU, FS), InstrInfo(*this),
-      FrameLowering() {
+      FrameLowering(), TLInfo(TM, *this) {
   ParseSubtargetFeatures(CPU, CPU, FS);
 }
 

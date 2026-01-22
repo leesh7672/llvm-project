@@ -50,7 +50,8 @@ public:
 };
 } // namespace
 
-MCAsmBackend *createSPEX64AsmBackend(const Target &, const MCSubtargetInfo &STI,
+MCAsmBackend *createSPEX64AsmBackend(const Target &T,
+                                     const MCSubtargetInfo &STI,
                                      const MCRegisterInfo &,
                                      const MCTargetOptions &) {
   return new SPEX64AsmBackend(STI);

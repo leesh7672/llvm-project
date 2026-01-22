@@ -2,6 +2,7 @@
 #define LLVM_LIB_TARGET_SPEX64_SPEX64SUBTARGET_H
 
 #include "SPEX64FrameLowering.h"
+#include "SPEX64ISelLowering.h"
 #include "SPEX64InstrInfo.h"
 
 #include "llvm/CodeGen/TargetSubtargetInfo.h"
@@ -23,6 +24,7 @@ private:
 
   SPEX64InstrInfo InstrInfo;
   SPEX64FrameLowering FrameLowering;
+  SPEX64TargetLowering TLInfo;
 
 public:
   SPEX64Subtarget(const Triple &TT, StringRef CPU, StringRef FS, SPEX64TargetMachine &TM);
@@ -38,6 +40,7 @@ public:
   const TargetFrameLowering *getFrameLowering() const override {
     return &FrameLowering;
   }
+  const TargetLowering *getTargetLowering() const override { return &TLInfo; }
 };
 
 } // namespace llvm

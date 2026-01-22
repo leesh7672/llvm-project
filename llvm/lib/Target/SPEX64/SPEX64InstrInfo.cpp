@@ -309,6 +309,12 @@ bool SPEX64InstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
     MI.eraseFromParent();
     return true;
   }
+  case SPEX64::PSEUDO_BR: {
+    MachineBasicBlock *Dest = MI.getOperand(0).getMBB();
+    BuildMI(MBB, I, DL, get(SPEX64::JMP64)).addMBB(Dest);
+    MI.eraseFromParent();
+    return true;
+  }
   case SPEX64::PSEUDO_BR_CC32:
   case SPEX64::PSEUDO_BR_CC64: {
     Register LHS = MI.getOperand(0).getReg();

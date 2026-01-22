@@ -12,8 +12,10 @@
 using namespace llvm;
 
 extern "C" void LLVMInitializeSPEX64TargetMC();
+extern "C" void LLVMInitializeSPEX64AsmPrinter();
 
 extern "C" void LLVMInitializeSPEX64Target() {
   LLVMInitializeSPEX64TargetMC();
+  LLVMInitializeSPEX64AsmPrinter();
   RegisterTargetMachine<SPEX64TargetMachine> X(getTheSPEX64Target());
 }

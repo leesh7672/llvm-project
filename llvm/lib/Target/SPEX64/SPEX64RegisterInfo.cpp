@@ -74,7 +74,7 @@ Register SPEX64RegisterInfo::getFrameRegister(const MachineFunction &MF) const {
 
 const MCPhysReg *
 SPEX64RegisterInfo::getCalleeSavedRegs(const MachineFunction *) const {
-  return nullptr;
+  return CSR_SPEX64_SaveList;
 }
 
 bool SPEX64RegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator MI,

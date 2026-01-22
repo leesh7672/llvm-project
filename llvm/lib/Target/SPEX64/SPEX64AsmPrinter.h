@@ -1,15 +1,17 @@
 #ifndef LLVM_LIB_TARGET_SPEX64_SPEX64ASMPRINTER_H
 #define LLVM_LIB_TARGET_SPEX64_SPEX64ASMPRINTER_H
 
+#include "SPEX64MCInstLower.h"
 #include "llvm/CodeGen/AsmPrinter.h"
 #include "llvm/MC/MCStreamer.h"
 
 namespace llvm {
 
 class SPEX64AsmPrinter final : public AsmPrinter {
+  SPEX64MCInstLower MCInstLowering;
+
 public:
-  SPEX64AsmPrinter(TargetMachine &TM, std::unique_ptr<MCStreamer> Streamer)
-      : AsmPrinter(TM, std::move(Streamer)) {}
+  SPEX64AsmPrinter(TargetMachine &TM, std::unique_ptr<MCStreamer> Streamer);
   ~SPEX64AsmPrinter() override;
 
   StringRef getPassName() const override { return "SPEX64 Assembly Printer"; }

@@ -17,7 +17,6 @@ namespace {
 
 class SPEX64MCCodeEmitter : public MCCodeEmitter {
   MCContext &Ctx;
-  const MCInstrInfo &MCII;
 
   uint64_t getBinaryCodeForInstr(const MCInst &MI,
                                  SmallVectorImpl<MCFixup> &Fixups,
@@ -28,8 +27,7 @@ class SPEX64MCCodeEmitter : public MCCodeEmitter {
                              const MCSubtargetInfo &STI) const;
 
 public:
-  SPEX64MCCodeEmitter(MCContext &Ctx, const MCInstrInfo &MCII)
-      : Ctx(Ctx), MCII(MCII) {}
+  SPEX64MCCodeEmitter(MCContext &Ctx, const MCInstrInfo &) : Ctx(Ctx) {}
   ~SPEX64MCCodeEmitter() override = default;
 
   void encodeInstruction(const MCInst &MI, SmallVectorImpl<char> &CB,

@@ -8,7 +8,8 @@
 
 using namespace llvm;
 
-static constexpr const char *SPEX64DataLayout = "e-m:e-i64:64-n64";
+static constexpr const char *SPEX64DataLayout =
+    "e-m:e-p:64:64-i64:64-n8:16:32:64-S128";
 
 SPEX64TargetMachine::SPEX64TargetMachine(const Target &T, const Triple &TT,
                                          StringRef CPU, StringRef FS,
@@ -19,7 +20,10 @@ SPEX64TargetMachine::SPEX64TargetMachine(const Target &T, const Triple &TT,
     : CodeGenTargetMachineImpl(T, SPEX64DataLayout, TT, CPU, FS, Options,
                                RM.value_or(Reloc::Static),
                                getEffectiveCodeModel(CM, CodeModel::Small), OL),
-      TLOF(std::unique_ptr<TargetLoweringObjectFileELF>()), Subtarget(TT, CPU, FS, *this) {}
+      TLOF(std::make_unique<TargetLoweringObjectFileELF>()),
+      Subtarget(TT, CPU, FS, *this) {
+  initAsmInfo();
+}
 
 SPEX64TargetMachine::~SPEX64TargetMachine() = default;
 

@@ -96,3 +96,8 @@ def GPR : RegisterClass<"SPEX64", [i64, i32], 64,
 }
 
 def ACC : RegisterClass<"SPEX64", [i64], 64, (add RX)>;
+
+def CSR_SPEX64 : CalleeSavedRegs<(add R8, R9, R10, R11, R12,
+                                      R24, R25, R26, R27, R28,
+                                      R40, R41, R42, R43, R44,
+                                      R56, R57, R58, R59, R60)>;
