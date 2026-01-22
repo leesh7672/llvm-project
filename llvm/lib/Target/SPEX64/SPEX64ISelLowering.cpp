@@ -106,7 +106,7 @@ SDValue SPEX64TargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   CallingConv::ID CallConv = CLI.CallConv;
 
   if (CLI.IsTailCall)
-    report_fatal_error("SPEX64: tail calls are not supported");
+    CLI.IsTailCall = false;
 
   if (CallConv != CallingConv::C && CallConv != CallingConv::Fast)
     report_fatal_error("SPEX64: unsupported calling convention");
