@@ -12,6 +12,7 @@ namespace SPEX64ISD {
 enum NodeType : unsigned {
   FIRST_NUMBER = ISD::BUILTIN_OP_END,
   RET,
+  BR,
   BR_CC,
 };
 } // namespace SPEX64ISD
@@ -24,6 +25,9 @@ public:
                                 const SPEX64Subtarget &ST);
 
   SDValue LowerOperation(SDValue Op, SelectionDAG &DAG) const override;
+
+  SDValue LowerBR(SDValue Chain, SDValue Dest, const SDLoc &DL,
+                  SelectionDAG &DAG) const;
 
   SDValue LowerFormalArguments(SDValue Chain, CallingConv::ID CC, bool IsVarArg,
                                const SmallVectorImpl<ISD::InputArg> &Ins,
@@ -38,6 +42,14 @@ public:
   SDValue LowerBR_CC(SDValue Chain, ISD::CondCode CC, SDValue LHS, SDValue RHS,
                      SDValue Dest, const SDLoc &DL,
                      SelectionDAG &DAG) const;
+
+  SDValue LowerCall(TargetLowering::CallLoweringInfo &CLI,
+                    SmallVectorImpl<SDValue> &InVals) const override;
+
+private:
+  SDValue lowerCallResult(SDValue Chain, const SDLoc &DL,
+                          const SmallVectorImpl<ISD::InputArg> &Ins,
+                          SelectionDAG &DAG, SmallVectorImpl<SDValue> &InVals) const;
 };
 
 } // namespace llvm
