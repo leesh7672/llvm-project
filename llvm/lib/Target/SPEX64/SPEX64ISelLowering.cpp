@@ -144,10 +144,9 @@ SDValue SPEX64TargetLowering::LowerFormalArguments(
   CCInfo.AnalyzeFormalArguments(Ins, CC_SPEX64);
 
   for (const CCValAssign &VA : ArgLocs) {
-    if (!VA.isRegLoc())
-      report_fatal_error("SPEX64: stack arguments not supported yet");
+  EVT RegVT = VA.getLocVT();
 
-    EVT RegVT = VA.getLocVT();
+  if (VA.isRegLoc()) {
     Register VReg = MRI.createVirtualRegister(&SPEX64::GPRRegClass);
     MRI.addLiveIn(VA.getLocReg(), VReg);
     SDValue ArgValue = DAG.getCopyFromReg(Chain, DL, VReg, RegVT);
@@ -163,9 +162,22 @@ SDValue SPEX64TargetLowering::LowerFormalArguments(
       ArgValue = DAG.getNode(ISD::TRUNCATE, DL, VA.getValVT(), ArgValue);
 
     InVals.push_back(ArgValue);
+    continue;
   }
 
-  return Chain;
+  // Stack-passed argument: load from [SP + locmemoffset] at function entry.
+  MachineFrameInfo &MFI = MF.getFrameInfo();
+  int FI = MFI.CreateFixedObject(/*Size=*/8, VA.getLocMemOffset(),
+                                 /*IsImmutable=*/true);
+  SDValue FIN = DAG.getFrameIndex(FI, MVT::i64);
+  SDValue Ld = DAG.getLoad(RegVT, DL, Chain, FIN,
+                           MachinePointerInfo::getFixedStack(MF, FI));
+  InVals.push_back(Ld);
+  Chain = Ld.getValue(1);
+}
+
+return Chain;
+
 }
 
 SDValue
@@ -271,7 +283,14 @@ SPEX64TargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
       continue;
     }
 
-    report_fatal_error("SPEX64: stack arguments not supported yet");
+    // Stack argument: store to outgoing call frame at [SP + LocMemOffset].
+SDValue SPReg = DAG.getRegister(SPEX64::R63, MVT::i64);
+int64_t Off = VA.getLocMemOffset();
+SDValue Ptr = DAG.getNode(ISD::ADD, DL, MVT::i64, SPReg,
+                          DAG.getConstant(Off, DL, MVT::i64));
+Chain = DAG.getStore(Chain, DL, Arg, Ptr, MachinePointerInfo());
+continue;
+
   }
 
   SDValue InGlue;

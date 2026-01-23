@@ -26,12 +26,11 @@ void SPEX64InstrInfo::copyPhysReg(MachineBasicBlock &MBB,
                                   MachineBasicBlock::iterator MI,
                                   const DebugLoc &DL, Register DestReg,
                                   Register SrcReg, bool KillSrc,
-                                  bool RenamableDest,
-                                  bool RenamableSrc) const {
+                                  bool RenamableDest, bool RenamableSrc) const {
   if (SPEX64::GPRRegClass.contains(DestReg, SrcReg)) {
     BuildMI(MBB, MI, DL, get(SPEX64::MOVMOV64))
-        .addReg(SrcReg, getKillRegState(KillSrc) |
-                            getRenamableRegState(RenamableSrc));
+        .addReg(SrcReg,
+                getKillRegState(KillSrc) | getRenamableRegState(RenamableSrc));
     BuildMI(MBB, MI, DL, get(SPEX64::MOVMOV64_R))
         .addReg(DestReg,
                 RegState::Define | getRenamableRegState(RenamableDest));
@@ -40,8 +39,8 @@ void SPEX64InstrInfo::copyPhysReg(MachineBasicBlock &MBB,
 
   if (DestReg == SPEX64::RX && SPEX64::GPRRegClass.contains(SrcReg)) {
     BuildMI(MBB, MI, DL, get(SPEX64::MOVMOV64))
-        .addReg(SrcReg, getKillRegState(KillSrc) |
-                            getRenamableRegState(RenamableSrc));
+        .addReg(SrcReg,
+                getKillRegState(KillSrc) | getRenamableRegState(RenamableSrc));
     return;
   }
 
@@ -82,16 +81,47 @@ static unsigned getCondBranchOpcode(ISD::CondCode CC) {
   }
 }
 
+void SPEX64InstrInfo::storeRegToStackSlot(
+    MachineBasicBlock &MBB, MachineBasicBlock::iterator MI, Register SrcReg,
+    bool isKill, int FrameIndex, const TargetRegisterClass *RC, Register VReg,
+    MachineInstr::MIFlag Flags) const {
+  (void)TRI;
+  DebugLoc DL = MI != MBB.end() ? MI->getDebugLoc() : DebugLoc();
+  // We only support integer GPR spills right now.
+  if (RC != &SPEX64::GPRRegClass)
+    report_fatal_error("SPEX64: unsupported spill register class");
+
+  // FrameIndex will be resolved later by eliminateFrameIndex.
+  // Use the existing pseudo store so the post-RA expander can materialize
+  // base into RX and pick ST size.
+  unsigned Opc = SPEX64::PSEUDO_ST64;
+  BuildMI(MBB, MI, DL, get(Opc))
+      .addReg(SrcReg, getKillRegState(isKill))
+      .addFrameIndex(FrameIndex)
+      .addImm(0);
+}
+
+void SPEX64InstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
+                                           MachineBasicBlock::iterator MI,
+                                           Register DestReg, int FrameIndex,
+                                           const TargetRegisterClass *RC,
+                                           Register VReg, unsigned SubReg,
+                                           MachineInstr::MIFlag Flags) const {
+  (void)TRI;
+  DebugLoc DL = MI != MBB.end() ? MI->getDebugLoc() : DebugLoc();
+  if (RC != &SPEX64::GPRRegClass)
+    report_fatal_error("SPEX64: unsupported reload register class");
+
+  unsigned Opc = SPEX64::PSEUDO_LDZ64;
+  BuildMI(MBB, MI, DL, get(Opc), DestReg).addFrameIndex(FrameIndex).addImm(0);
+}
+
 bool SPEX64InstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
   MachineBasicBlock &MBB = *MI.getParent();
   MachineBasicBlock::iterator I = MI.getIterator();
   DebugLoc DL = MI.getDebugLoc();
 
   switch (MI.getOpcode()) {
-  case SPEX64::ADJCALLSTACKDOWN:
-  case SPEX64::ADJCALLSTACKUP:
-    MI.eraseFromParent();
-    return true;
   case SPEX64::CALL: {
     MachineInstrBuilder MIB = BuildMI(MBB, I, DL, get(SPEX64::CALL64));
     for (const MachineOperand &MO : MI.operands())
@@ -133,8 +163,7 @@ bool SPEX64InstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
   case SPEX64::PSEUDO_LI64: {
     Register Dst = MI.getOperand(0).getReg();
     int64_t Imm = MI.getOperand(1).getImm();
-    unsigned LiOpc =
-        isInt<32>(Imm) ? SPEX64::LILI64_32 : SPEX64::LILI64_64;
+    unsigned LiOpc = isInt<32>(Imm) ? SPEX64::LILI64_32 : SPEX64::LILI64_64;
     BuildMI(MBB, I, DL, get(LiOpc)).addImm(Imm);
     BuildMI(MBB, I, DL, get(SPEX64::MOVMOV64_R), Dst);
     MI.eraseFromParent();
