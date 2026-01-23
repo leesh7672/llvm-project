@@ -81,6 +81,8 @@ SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
   setLoadExtAction(ISD::SEXTLOAD, MVT::i64, MVT::i16, Legal);
   setLoadExtAction(ISD::SEXTLOAD, MVT::i64, MVT::i32, Legal);
 
+  setOperationAction(ISD::GlobalAddress, MVT::i64, Custom);
+  setOperationAction(ISD::ExternalSymbol, MVT::i64, Custom);
 }
 
 SDValue SPEX64TargetLowering::LowerOperation(SDValue Op,
@@ -89,10 +91,9 @@ SDValue SPEX64TargetLowering::LowerOperation(SDValue Op,
   case ISD::BR:
     return LowerBR(Op.getOperand(0), Op.getOperand(1), SDLoc(Op), DAG);
   case ISD::BR_CC:
-    return LowerBR_CC(Op.getOperand(0),
-                      cast<CondCodeSDNode>(Op.getOperand(1))->get(),
-                      Op.getOperand(2), Op.getOperand(3), Op.getOperand(4),
-                      SDLoc(Op), DAG);
+    return LowerBR_CC(
+        Op.getOperand(0), cast<CondCodeSDNode>(Op.getOperand(1))->get(),
+        Op.getOperand(2), Op.getOperand(3), Op.getOperand(4), SDLoc(Op), DAG);
   case ISD::ZERO_EXTEND: {
     // Prefer a single extending load when we see zext(load i8/i16/i32).
     SDValue Src = Op.getOperand(0);
@@ -108,6 +109,18 @@ SDValue SPEX64TargetLowering::LowerOperation(SDValue Op,
     }
     break;
   }
+  case ISD::GlobalAddress: {
+    auto *GA = cast<GlobalAddressSDNode>(Op);
+    return DAG.getTargetGlobalAddress(GA->getGlobal(), SDLoc(Op),
+                                      Op.getValueType(), GA->getOffset());
+  }
+
+  case ISD::ExternalSymbol: {
+    auto *ES = cast<ExternalSymbolSDNode>(Op);
+    return DAG.getTargetExternalSymbol(ES->getSymbol(), Op.getValueType(),
+                                       ES->getTargetFlags());
+  }
+
   default:
     break;
   }
@@ -155,11 +168,11 @@ SDValue SPEX64TargetLowering::LowerFormalArguments(
   return Chain;
 }
 
-SDValue SPEX64TargetLowering::LowerReturn(
-    SDValue Chain, CallingConv::ID, bool,
-    const SmallVectorImpl<ISD::OutputArg> &Outs,
-    const SmallVectorImpl<SDValue> &OutVals, const SDLoc &DL,
-    SelectionDAG &DAG) const {
+SDValue
+SPEX64TargetLowering::LowerReturn(SDValue Chain, CallingConv::ID, bool,
+                                  const SmallVectorImpl<ISD::OutputArg> &Outs,
+                                  const SmallVectorImpl<SDValue> &OutVals,
+                                  const SDLoc &DL, SelectionDAG &DAG) const {
   if (Outs.size() > 1)
     report_fatal_error("SPEX64: only one return value is supported");
 
@@ -177,8 +190,8 @@ SDValue SPEX64TargetLowering::LowerReturn(
 }
 
 SDValue SPEX64TargetLowering::LowerBR_CC(SDValue Chain, ISD::CondCode CC,
-                                         SDValue LHS, SDValue RHS,
-                                         SDValue Dest, const SDLoc &DL,
+                                         SDValue LHS, SDValue RHS, SDValue Dest,
+                                         const SDLoc &DL,
                                          SelectionDAG &DAG) const {
   auto ExtendTo = [&](SDValue V, MVT VT) -> SDValue {
     if (V.getValueType() == VT)
@@ -206,8 +219,9 @@ SDValue SPEX64TargetLowering::LowerBR(SDValue Chain, SDValue Dest,
   return DAG.getNode(SPEX64ISD::BR, DL, MVT::Other, Chain, Dest);
 }
 
-SDValue SPEX64TargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
-                                        SmallVectorImpl<SDValue> &InVals) const {
+SDValue
+SPEX64TargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
+                                SmallVectorImpl<SDValue> &InVals) const {
   SelectionDAG &DAG = CLI.DAG;
   SDLoc DL(CLI.DL);
   SDValue Chain = CLI.Chain;
@@ -273,15 +287,15 @@ SDValue SPEX64TargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
     break;
   case ISD::GlobalAddress: {
     auto *GA = cast<GlobalAddressSDNode>(Callee);
-    Target = DAG.getTargetGlobalAddress(
-        GA->getGlobal(), DL, getPointerTy(DAG.getDataLayout()),
-        GA->getOffset(), GA->getTargetFlags());
+    Target = DAG.getTargetGlobalAddress(GA->getGlobal(), DL,
+                                        getPointerTy(DAG.getDataLayout()),
+                                        GA->getOffset(), GA->getTargetFlags());
     break;
   }
   case ISD::ExternalSymbol: {
     auto *ES = cast<ExternalSymbolSDNode>(Callee);
-    Target = DAG.getTargetExternalSymbol(
-        ES->getSymbol(), getPointerTy(DAG.getDataLayout()));
+    Target = DAG.getTargetExternalSymbol(ES->getSymbol(),
+                                         getPointerTy(DAG.getDataLayout()));
     break;
   }
   default:
@@ -327,8 +341,7 @@ SDValue SPEX64TargetLowering::lowerCallResult(
   if (Ins.size() > 1)
     report_fatal_error("SPEX64: multiple return values not supported");
 
-  SDValue Copy =
-      DAG.getCopyFromReg(Chain, DL, SPEX64::RX, MVT::i64, InGlue);
+  SDValue Copy = DAG.getCopyFromReg(Chain, DL, SPEX64::RX, MVT::i64, InGlue);
   Chain = Copy.getValue(1);
   SDValue Val = Copy;
   if (Ins[0].VT != MVT::i64)
