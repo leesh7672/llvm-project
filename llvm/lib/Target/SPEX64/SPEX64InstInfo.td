@@ -52,10 +52,12 @@ def SPEX64Imm9  : Operand<i32> {
 def SPEX64Imm32 : Operand<i32> {
   let ParserMatchClass = SPEX64Imm32AsmOperand;
   let DecoderMethod = "DecodeSPEX64Imm32";
+  let EncoderMethod = "getMachineOpValue";
 }
 def SPEX64Imm64 : Operand<i64> {
   let ParserMatchClass = SPEX64Imm64AsmOperand;
   let DecoderMethod = "DecodeSPEX64Imm64";
+  let EncoderMethod = "getMachineOpValue";
 }
 
 def brtarget : Operand<OtherVT>;
