@@ -1,4 +1,5 @@
-//===-- SPEX64TargetMachineImpl.cpp - SPEX64 target machine implementation --*- C++ -*-===//
+//===-- SPEX64TargetMachineImpl.cpp - SPEX64 target machine implementation --*-
+//C++ -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -6,14 +7,15 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "SPEX64.h"
 #include "SPEX64ISelDAGToDAG.h"
 #include "SPEX64TargetMachine.h"
 
 #include "llvm/CodeGen/RegAllocRegistry.h"
+#include "llvm/CodeGen/TargetLoweringObjectFileImpl.h"
 #include "llvm/CodeGen/TargetPassConfig.h"
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/Target/TargetOptions.h"
-#include "llvm/CodeGen/TargetLoweringObjectFileImpl.h"
 
 using namespace llvm;
 
@@ -54,6 +56,7 @@ public:
   FunctionPass *createTargetRegisterAllocator(bool) override {
     return createGreedyRegisterAllocator();
   }
+  void addPreEmitPass() override { addPass(createSPEX64ExpandPseudoPass()); }
 };
 } // namespace
 

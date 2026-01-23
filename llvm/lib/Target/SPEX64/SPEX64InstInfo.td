@@ -578,9 +578,13 @@ def CAS64 : SPEX64Inst<"cas64\t$r6", (outs), (ins GPR:$r6), 0x800, 0, 0b11, 0, 0
 // CSR / MMU / IPI
 def CSRR : SPEX64InstNoR6<"csrr\t$imm", (outs), (ins SPEX64Imm32:$imm),
                       0x900, 0, 0b00, 1, 0> {
+  let Defs = [RX];
+  let hasSideEffects = 1;
 }
 def CSRW : SPEX64InstNoR6<"csrw\t$imm", (outs), (ins SPEX64Imm32:$imm),
                       0x902, 0, 0b00, 1, 0> {
+  let Uses = [RX];
+  let hasSideEffects = 1;
 }
 def TLBFLUSH : SPEX64InstNoR6<"tlbflush", (outs), (ins), 0x910, 0, 0b00, 0, 0>;
 def TLBFLUSHASID : SPEX64Inst<"tlbflushasid\t$r6", (outs), (ins GPR:$r6),

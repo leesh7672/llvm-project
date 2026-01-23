@@ -21,8 +21,10 @@
 #include "SPEX64GenSubtargetInfo.inc"
 
 namespace llvm {
+class MachineFunctionPass;
 class PassRegistry;
 void initializeSPEX64DAGToDAGISelLegacyPass(PassRegistry &);
+MachineFunctionPass *createSPEX64ExpandPseudoPass();
 } // namespace llvm
 
 #endif
