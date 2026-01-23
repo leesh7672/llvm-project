@@ -30,6 +30,21 @@ add_llvm_target(SPEX64CodeGen
   SPEX64FrameLowering.cpp
   SPEX64ISelDAGToDAG.cpp
   SPEX64ISelLowering.cpp
+
+  LINK_COMPONENTS
+    Analysis
+    AsmPrinter
+    CodeGen
+    CodeGenTypes
+    Core
+    MC
+    SelectionDAG
+    Support
+    Target
+    TargetParser
+
+  ADD_TO_COMPONENT
+    SPEX64
 )
 
 target_link_libraries(LLVMSPEX64CodeGen PRIVATE LLVMSPEX64Info LLVMSPEX64Desc LLVMSPEX64AsmParser)
