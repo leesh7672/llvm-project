@@ -338,25 +338,10 @@ multiclass SPEX64_MOV_SZ<string def_suf, string asm_suf, bits<2> sz2> {
     let K9 = 3;
   }
 }
-defm MOV : SPEX64_MOV_SZ<"8",  "8",  0b00>;
-defm MOV : SPEX64_MOV_SZ<"16", "16", 0b01>;
-defm MOV : SPEX64_MOV_SZ<"32", "32", 0b10>;
-defm MOV : SPEX64_MOV_SZ<"64", "64", 0b11>;
-
-multiclass SPEX64_MOV_ALIAS_SZ<string def_suf, string asm_suf> {
-  def : InstAlias<"mov"#asm_suf#" rx, $r6",
-                  (!cast<Instruction>("MOVMOV"#def_suf) GPR:$r6)>;
-  def : InstAlias<"mov"#asm_suf#" rx, cx0",
-                  (!cast<Instruction>("MOVMOV"#def_suf#"_CX0"))>;
-  def : InstAlias<"mov"#asm_suf#" rx, cx1",
-                  (!cast<Instruction>("MOVMOV"#def_suf#"_CX1"))>;
-  def : InstAlias<"mov"#asm_suf#" rx, cas",
-                  (!cast<Instruction>("MOVMOV"#def_suf#"_CAS"))>;
-}
-defm MOV_ALIAS : SPEX64_MOV_ALIAS_SZ<"8",  "8">;
-defm MOV_ALIAS : SPEX64_MOV_ALIAS_SZ<"16", "16">;
-defm MOV_ALIAS : SPEX64_MOV_ALIAS_SZ<"32", "32">;
-defm MOV_ALIAS : SPEX64_MOV_ALIAS_SZ<"64", "64">;
+defm MOV: SPEX64_MOV_SZ<"8",  "8",  0b00>;
+defm MOV: SPEX64_MOV_SZ<"16", "16", 0b01>;
+defm MOV: SPEX64_MOV_SZ<"32", "32", 0b10>;
+defm MOV: SPEX64_MOV_SZ<"64", "64", 0b11>;
 
 // li*
 multiclass SPEX64_LI_SZ<string def_suf, string asm_suf, bits<2> sz2> {

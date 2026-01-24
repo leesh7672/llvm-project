@@ -145,7 +145,7 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
     bool Is64 = (LHS.getValueType() == MVT::i64);
 
     // mov{32,64} rx, LHS
-    unsigned MovOpc = Is64 ? SPEX64::MOV64 : SPEX64::MOV32;
+    unsigned MovOpc = Is64 ? SPEX64::MOVMOV64 : SPEX64::MOVMOV32;
     SDNode *MovN = CurDAG->getMachineNode(MovOpc, DL, MVT::Glue, LHS);
     SDValue MovGlue(MovN, 0);
 
