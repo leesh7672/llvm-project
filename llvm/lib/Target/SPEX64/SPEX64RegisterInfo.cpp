@@ -18,12 +18,13 @@
 
 using namespace llvm;
 
-SPEX64RegisterInfo::SPEX64RegisterInfo() : SPEX64GenRegisterInfo(/*RA=*/0) {}
+SPEX64RegisterInfo::SPEX64RegisterInfo()
+    : SPEX64GenRegisterInfo(/*RA=*/SPEX64::LR) {}
 
 // Stack pointer selection.
 // For v1 hardware, registers are globally accessible across lanes.
 Register SPEX64RegisterInfo::getStackRegister(const MachineFunction &) const {
-  return SPEX64::R13; // canonical SP
+  return SPEX64::R63; // ABI stack pointer (convention)
 }
 
 // Frame pointer equals stack pointer.
@@ -41,6 +42,9 @@ BitVector SPEX64RegisterInfo::getReservedRegs(const MachineFunction &MF) const {
 
   // Reserve stack pointer
   Reserved.set(getStackRegister(MF));
+
+  // Reserve link register (return address)
+  Reserved.set(SPEX64::LR);
 
   return Reserved;
 }

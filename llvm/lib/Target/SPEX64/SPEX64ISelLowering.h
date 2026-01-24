@@ -10,6 +10,7 @@
 #define LLVM_LIB_TARGET_SPEX64_SPEX64ISELLOWERING_H
 
 #include "llvm/CodeGen/TargetLowering.h"
+#include "llvm/CodeGen/MachineFrameInfo.h"
 
 namespace llvm {
 

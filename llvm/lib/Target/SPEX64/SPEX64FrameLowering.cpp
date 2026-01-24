@@ -11,6 +11,11 @@
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/TargetInstrInfo.h"
+#include "llvm/CodeGen/MachineInstrBuilder.h"
+#include "llvm/Support/MathExtras.h"
+#include "SPEX64.h"
+#include "SPEX64InstrInfo.h"
+#include "SPEX64Subtarget.h"
 
 using namespace llvm;
 
