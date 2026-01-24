@@ -139,6 +139,24 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
     ReplaceNode(Node, Ret);
     return;
   }
+  case SPEX64ISD::LSTOP: {
+    SDValue Chain = Node->getOperand(0);
+    SDNode *N = CurDAG->getMachineNode(SPEX64::LSTOP, DL, MVT::Other, Chain);
+    ReplaceNode(Node, N);
+    return;
+  }
+  case SPEX64ISD::LWAIT: {
+    SDValue Chain = Node->getOperand(0);
+    SDNode *N = CurDAG->getMachineNode(SPEX64::LWAIT, DL, MVT::Other, Chain);
+    ReplaceNode(Node, N);
+    return;
+  }
+  case SPEX64ISD::LWAKE: {
+    SDValue Chain = Node->getOperand(0);
+    SDNode *N = CurDAG->getMachineNode(SPEX64::LWAKE, DL, MVT::Other, Chain);
+    ReplaceNode(Node, N);
+    return;
+  }
   case SPEX64ISD::BR_CC: {
     SDValue Chain = Node->getOperand(0);
     SDValue LHS = Node->getOperand(1);

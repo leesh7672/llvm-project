@@ -24,6 +24,9 @@ enum NodeType : unsigned {
   RET,
   BR,
   BR_CC,
+  LSTOP,
+  LWAIT,
+  LWAKE,
 };
 } // namespace SPEX64ISD
 
