@@ -29,6 +29,11 @@ SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
   addRegisterClass(MVT::i16, &SPEX64::GPRRegClass);
   addRegisterClass(MVT::i8, &SPEX64::GPRRegClass);
 
+  addRegisterClass(MVT::i64, &SPEX64::ACCRegClass);
+  addRegisterClass(MVT::i32, &SPEX64::ACCRegClass);
+  addRegisterClass(MVT::i16, &SPEX64::ACCRegClass);
+  addRegisterClass(MVT::i8, &SPEX64::ACCRegClass);
+
   computeRegisterProperties(ST.getRegisterInfo());
 
   setOperationAction(ISD::Constant, MVT::i8, Promote);
@@ -88,17 +93,24 @@ SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
 
 const char *SPEX64TargetLowering::getTargetNodeName(unsigned Opcode) const {
   switch (Opcode) {
-  case SPEX64ISD::CALL: return "SPEX64ISD::CALL";
-  case SPEX64ISD::RET: return "SPEX64ISD::RET";
-  case SPEX64ISD::BR: return "SPEX64ISD::BR";
-  case SPEX64ISD::BR_CC: return "SPEX64ISD::BR_CC";
-  case SPEX64ISD::LSTOP: return "SPEX64ISD::LSTOP";
-  case SPEX64ISD::LWAIT: return "SPEX64ISD::LWAIT";
-  case SPEX64ISD::LWAKE: return "SPEX64ISD::LWAKE";
-  default: return nullptr;
+  case SPEX64ISD::CALL:
+    return "SPEX64ISD::CALL";
+  case SPEX64ISD::RET:
+    return "SPEX64ISD::RET";
+  case SPEX64ISD::BR:
+    return "SPEX64ISD::BR";
+  case SPEX64ISD::BR_CC:
+    return "SPEX64ISD::BR_CC";
+  case SPEX64ISD::LSTOP:
+    return "SPEX64ISD::LSTOP";
+  case SPEX64ISD::LWAIT:
+    return "SPEX64ISD::LWAIT";
+  case SPEX64ISD::LWAKE:
+    return "SPEX64ISD::LWAKE";
+  default:
+    return nullptr;
   }
 }
-
 
 SDValue SPEX64TargetLowering::LowerOperation(SDValue Op,
                                              SelectionDAG &DAG) const {
@@ -159,40 +171,39 @@ SDValue SPEX64TargetLowering::LowerFormalArguments(
   CCInfo.AnalyzeFormalArguments(Ins, CC_SPEX64);
 
   for (const CCValAssign &VA : ArgLocs) {
-  EVT RegVT = VA.getLocVT();
+    EVT RegVT = VA.getLocVT();
 
-  if (VA.isRegLoc()) {
-    Register VReg = MRI.createVirtualRegister(&SPEX64::GPRRegClass);
-    MRI.addLiveIn(VA.getLocReg(), VReg);
-    SDValue ArgValue = DAG.getCopyFromReg(Chain, DL, VReg, RegVT);
+    if (VA.isRegLoc()) {
+      Register VReg = MRI.createVirtualRegister(&SPEX64::GPRRegClass);
+      MRI.addLiveIn(VA.getLocReg(), VReg);
+      SDValue ArgValue = DAG.getCopyFromReg(Chain, DL, VReg, RegVT);
 
-    if (VA.getLocInfo() == CCValAssign::SExt)
-      ArgValue = DAG.getNode(ISD::AssertSext, DL, RegVT, ArgValue,
-                             DAG.getValueType(VA.getValVT()));
-    else if (VA.getLocInfo() == CCValAssign::ZExt)
-      ArgValue = DAG.getNode(ISD::AssertZext, DL, RegVT, ArgValue,
-                             DAG.getValueType(VA.getValVT()));
+      if (VA.getLocInfo() == CCValAssign::SExt)
+        ArgValue = DAG.getNode(ISD::AssertSext, DL, RegVT, ArgValue,
+                               DAG.getValueType(VA.getValVT()));
+      else if (VA.getLocInfo() == CCValAssign::ZExt)
+        ArgValue = DAG.getNode(ISD::AssertZext, DL, RegVT, ArgValue,
+                               DAG.getValueType(VA.getValVT()));
 
-    if (VA.getLocInfo() != CCValAssign::Full || RegVT != VA.getValVT())
-      ArgValue = DAG.getNode(ISD::TRUNCATE, DL, VA.getValVT(), ArgValue);
+      if (VA.getLocInfo() != CCValAssign::Full || RegVT != VA.getValVT())
+        ArgValue = DAG.getNode(ISD::TRUNCATE, DL, VA.getValVT(), ArgValue);
 
-    InVals.push_back(ArgValue);
-    continue;
+      InVals.push_back(ArgValue);
+      continue;
+    }
+
+    // Stack-passed argument: load from [SP + locmemoffset] at function entry.
+    MachineFrameInfo &MFI = MF.getFrameInfo();
+    int FI = MFI.CreateFixedObject(/*Size=*/8, VA.getLocMemOffset(),
+                                   /*IsImmutable=*/true);
+    SDValue FIN = DAG.getFrameIndex(FI, MVT::i64);
+    SDValue Ld = DAG.getLoad(RegVT, DL, Chain, FIN,
+                             MachinePointerInfo::getFixedStack(MF, FI));
+    InVals.push_back(Ld);
+    Chain = Ld.getValue(1);
   }
 
-  // Stack-passed argument: load from [SP + locmemoffset] at function entry.
-  MachineFrameInfo &MFI = MF.getFrameInfo();
-  int FI = MFI.CreateFixedObject(/*Size=*/8, VA.getLocMemOffset(),
-                                 /*IsImmutable=*/true);
-  SDValue FIN = DAG.getFrameIndex(FI, MVT::i64);
-  SDValue Ld = DAG.getLoad(RegVT, DL, Chain, FIN,
-                           MachinePointerInfo::getFixedStack(MF, FI));
-  InVals.push_back(Ld);
-  Chain = Ld.getValue(1);
-}
-
-return Chain;
-
+  return Chain;
 }
 
 SDValue
@@ -299,13 +310,12 @@ SPEX64TargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
     }
 
     // Stack argument: store to outgoing call frame at [SP + LocMemOffset].
-SDValue SPReg = DAG.getRegister(SPEX64::R63, MVT::i64);
-int64_t Off = VA.getLocMemOffset();
-SDValue Ptr = DAG.getNode(ISD::ADD, DL, MVT::i64, SPReg,
-                          DAG.getConstant(Off, DL, MVT::i64));
-Chain = DAG.getStore(Chain, DL, Arg, Ptr, MachinePointerInfo());
-continue;
-
+    SDValue SPReg = DAG.getRegister(SPEX64::R63, MVT::i64);
+    int64_t Off = VA.getLocMemOffset();
+    SDValue Ptr = DAG.getNode(ISD::ADD, DL, MVT::i64, SPReg,
+                              DAG.getConstant(Off, DL, MVT::i64));
+    Chain = DAG.getStore(Chain, DL, Arg, Ptr, MachinePointerInfo());
+    continue;
   }
 
   SDValue InGlue;
@@ -363,7 +373,8 @@ continue;
   Chain = DAG.getCALLSEQ_END(Chain, NumBytes, 0, InGlue, DL);
   InGlue = Chain.getValue(1);
 
-  SDValue ResultChain = lowerCallResult(Chain, InGlue, DL, CLI.Ins, DAG, InVals);
+  SDValue ResultChain =
+      lowerCallResult(Chain, InGlue, DL, CLI.Ins, DAG, InVals);
   return ResultChain;
 }
 

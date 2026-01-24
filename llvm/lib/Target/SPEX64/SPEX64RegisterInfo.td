@@ -105,7 +105,7 @@ def GPR : RegisterClass<"SPEX64", [i64, i32, i16, i8], 64,
   let DecoderMethod = "DecodeGPRRegisterClass";
 }
 
-def ACC : RegisterClass<"SPEX64", [i64], 64, (add RX)>;
+def ACC : RegisterClass<"SPEX64", [i64, i32, i16, i8], 64, (add RX)>;
 
 def CSR_SPEX64 : CalleeSavedRegs<(add R16, R17, R18, R19, R20, R21, R22, R23,
                                       R24, R25, R26, R27, R28, R29, R30, R31)>;
