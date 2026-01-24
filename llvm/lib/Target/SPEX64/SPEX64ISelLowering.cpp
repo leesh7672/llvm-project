@@ -137,20 +137,6 @@ SDValue SPEX64TargetLowering::LowerFormalArguments(
   if (IsVarArg)
     report_fatal_error("SPEX64: variadic arguments not supported");
 
-  // Automatic lane synchronization for general function calls:
-  //   lstop; lwait; call; (callee ret); lwake
-  // Targets all lanes except the executing lane (self).
-  Chain = DAG.getNode(SPEX64ISD::LSTOP, DL, MVT::Other, Chain);
-  Chain = DAG.getNode(SPEX64ISD::LWAIT, DL, MVT::Other, Chain);
-
-
-  // Automatic lane synchronization for general function calls:
-  //   lstop; lwait; call; (callee ret); lwake
-  // Targets all lanes except the executing lane (self).
-  Chain = DAG.getNode(SPEX64ISD::LSTOP, DL, MVT::Other, Chain);
-  Chain = DAG.getNode(SPEX64ISD::LWAIT, DL, MVT::Other, Chain);
-
-
   MachineFunction &MF = DAG.getMachineFunction();
   MachineRegisterInfo &MRI = MF.getRegInfo();
 
@@ -264,40 +250,6 @@ SPEX64TargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   if (CLI.IsVarArg)
     report_fatal_error("SPEX64: variadic arguments not supported");
 
-  // Automatic lane synchronization for general function calls:
-  //   lstop; lwait; call; (callee ret); lwake
-  // Targets all lanes except the executing lane (self).
-  Chain = DAG.getNode(SPEX64ISD::LSTOP, DL, MVT::Other, Chain);
-  Chain = DAG.getNode(SPEX64ISD::LWAIT, DL, MVT::Other, Chain);
-
-
-  // Automatic lane synchronization for general function calls:
-  //   lstop; lwait; call; (callee ret); lwake
-  // Targets all lanes except the executing lane (self).
-  Chain = DAG.getNode(SPEX64ISD::LSTOP, DL, MVT::Other, Chain);
-  Chain = DAG.getNode(SPEX64ISD::LWAIT, DL, MVT::Other, Chain);
-
-
-
-
-  // Automatic lane synchronization for general function calls:
-  //   lstop; lwait; call; (callee ret); lwake
-  // Targets all lanes except the executing lane (self).
-  Chain = DAG.getNode(SPEX64ISD::LSTOP, DL, MVT::Other, Chain);
-  Chain = DAG.getNode(SPEX64ISD::LWAIT, DL, MVT::Other, Chain);
-
-  // Automatic lane synchronization for general function calls:
-  //   lstop; lwait; call; (callee ret); lwake
-  // Targets all lanes except the executing lane (self).
-  Chain = DAG.getNode(SPEX64ISD::LSTOP, DL, MVT::Other, Chain);
-  Chain = DAG.getNode(SPEX64ISD::LWAIT, DL, MVT::Other, Chain);
-
-  // Automatic lane synchronization for general function calls:
-  //   lstop; lwait; call; (callee ret); lwake
-  // Targets all lanes except the executing lane (self).
-  Chain = DAG.getNode(SPEX64ISD::LSTOP, DL, MVT::Other, Chain);
-  Chain = DAG.getNode(SPEX64ISD::LWAIT, DL, MVT::Other, Chain);
-
   SmallVector<CCValAssign, 16> ArgLocs;
   CCState CCInfo(CallConv, CLI.IsVarArg, DAG.getMachineFunction(), ArgLocs,
                  *DAG.getContext());
@@ -398,8 +350,6 @@ continue;
   InGlue = Chain.getValue(1);
 
   SDValue ResultChain = lowerCallResult(Chain, InGlue, DL, CLI.Ins, DAG, InVals);
-  // Wake other lanes only after return values have been copied out.
-  ResultChain = DAG.getNode(SPEX64ISD::LWAKE, DL, MVT::Other, ResultChain);
   return ResultChain;
 }
 
