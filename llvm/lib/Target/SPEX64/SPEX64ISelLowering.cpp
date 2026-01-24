@@ -86,6 +86,20 @@ SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
   setOperationAction(ISD::ExternalSymbol, MVT::i64, Custom);
 }
 
+const char *SPEX64TargetLowering::getTargetNodeName(unsigned Opcode) const {
+  switch (Opcode) {
+  case SPEX64ISD::CALL: return "SPEX64ISD::CALL";
+  case SPEX64ISD::RET: return "SPEX64ISD::RET";
+  case SPEX64ISD::BR: return "SPEX64ISD::BR";
+  case SPEX64ISD::BR_CC: return "SPEX64ISD::BR_CC";
+  case SPEX64ISD::LSTOP: return "SPEX64ISD::LSTOP";
+  case SPEX64ISD::LWAIT: return "SPEX64ISD::LWAIT";
+  case SPEX64ISD::LWAKE: return "SPEX64ISD::LWAKE";
+  default: return nullptr;
+  }
+}
+
+
 SDValue SPEX64TargetLowering::LowerOperation(SDValue Op,
                                              SelectionDAG &DAG) const {
   switch (Op.getOpcode()) {

@@ -126,6 +126,83 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
     ReplaceNode(Node, Call);
     return;
   }
+
+  case SPEX64ISD::BR: {
+    SDValue Chain = Node->getOperand(0);
+    SDValue Dest  = Node->getOperand(1); // BasicBlock
+    SDValue Ops[] = {Dest, Chain};
+    SDNode *Br = CurDAG->getMachineNode(SPEX64::JMP32, DL, MVT::Other, Ops);
+    ReplaceNode(Node, Br);
+    return;
+  }
+  case SPEX64ISD::BR_CC: {
+    SDValue Chain = Node->getOperand(0);
+    SDValue LHS   = Node->getOperand(1);
+    SDValue RHS   = Node->getOperand(2);
+    auto CC = cast<CondCodeSDNode>(Node->getOperand(3))->get();
+    SDValue Dest  = Node->getOperand(4);
+
+    bool Is64 = (LHS.getValueType() == MVT::i64);
+
+    // mov{32,64} rx, LHS
+    unsigned MovOpc = Is64 ? SPEX64::MOV64 : SPEX64::MOV32;
+    SDNode *MovN = CurDAG->getMachineNode(MovOpc, DL, MVT::Glue, LHS);
+    SDValue MovGlue(MovN, 0);
+
+    // cmp{32,64} rx, RHS (reg or imm)
+    unsigned CmpOpc = 0;
+    SmallVector<SDValue, 4> CmpOps;
+    if (auto *CN = dyn_cast<ConstantSDNode>(RHS)) {
+      int64_t Imm = CN->getSExtValue();
+      if (Is64) {
+        // Prefer I32 form when it fits.
+        if (isInt<32>(Imm)) {
+          CmpOpc = SPEX64::CMP64_I32;
+          CmpOps.push_back(CurDAG->getTargetConstant(Imm, DL, MVT::i32));
+        } else {
+          CmpOpc = SPEX64::CMP64_I64;
+          CmpOps.push_back(CurDAG->getTargetConstant(Imm, DL, MVT::i64));
+        }
+      } else {
+        // i32 compare
+        CmpOpc = SPEX64::CMP32_I32;
+        CmpOps.push_back(CurDAG->getTargetConstant(Imm, DL, MVT::i32));
+      }
+    } else {
+      CmpOpc = Is64 ? SPEX64::CMP64_R : SPEX64::CMP32_R;
+      CmpOps.push_back(RHS);
+    }
+    CmpOps.push_back(MovGlue);
+    SDNode *CmpN = CurDAG->getMachineNode(CmpOpc, DL, MVT::Glue, CmpOps);
+    SDValue CmpGlue(CmpN, 0);
+
+    // Select BCC opcode based on condition code.
+    unsigned BccOpc = 0;
+    switch (CC) {
+    case ISD::SETEQ: BccOpc = Is64 ? SPEX64::BCC_eq_64 : SPEX64::BCC_eq_32; break;
+    case ISD::SETNE: BccOpc = Is64 ? SPEX64::BCC_ne_64 : SPEX64::BCC_ne_32; break;
+    case ISD::SETLT:
+    case ISD::SETULT: BccOpc = Is64 ? SPEX64::BCC_lt_64 : SPEX64::BCC_lt_32; break;
+    case ISD::SETLE:
+    case ISD::SETULE: BccOpc = Is64 ? SPEX64::BCC_le_64 : SPEX64::BCC_le_32; break;
+    case ISD::SETGT:
+    case ISD::SETUGT: BccOpc = Is64 ? SPEX64::BCC_gt_64 : SPEX64::BCC_gt_32; break;
+    case ISD::SETGE:
+    case ISD::SETUGE: BccOpc = Is64 ? SPEX64::BCC_ge_64 : SPEX64::BCC_ge_32; break;
+    default:
+      // Fallback: treat as !=
+      BccOpc = Is64 ? SPEX64::BCC_ne_64 : SPEX64::BCC_ne_32;
+      break;
+    }
+
+    SmallVector<SDValue, 4> BrOps;
+    BrOps.push_back(Dest);
+    BrOps.push_back(Chain);
+    BrOps.push_back(CmpGlue);
+    SDNode *BrN = CurDAG->getMachineNode(BccOpc, DL, MVT::Other, BrOps);
+    ReplaceNode(Node, BrN);
+    return;
+  }
   case SPEX64ISD::RET: {
     SDValue Chain = Node->getOperand(0);
     if (Node->getNumOperands() > 1) {

@@ -58,6 +58,8 @@ public:
   SDValue LowerCall(TargetLowering::CallLoweringInfo &CLI,
                     SmallVectorImpl<SDValue> &InVals) const override;
 
+  const char *getTargetNodeName(unsigned Opcode) const override;
+
 private:
   SDValue lowerCallResult(SDValue Chain, SDValue InGlue, const SDLoc &DL,
                           const SmallVectorImpl<ISD::InputArg> &Ins,
