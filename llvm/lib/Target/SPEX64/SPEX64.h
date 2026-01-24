@@ -25,6 +25,7 @@ class MachineFunctionPass;
 class PassRegistry;
 void initializeSPEX64DAGToDAGISelLegacyPass(PassRegistry &);
 MachineFunctionPass *createSPEX64ExpandPseudoPass();
+MachineFunctionPass *createSPEX64WrapCallsPass();
 } // namespace llvm
 
 #endif

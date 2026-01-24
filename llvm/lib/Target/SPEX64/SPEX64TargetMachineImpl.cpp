@@ -58,7 +58,10 @@ public:
       return createFastRegisterAllocator();
     return createGreedyRegisterAllocator();
   }
-  void addPreEmitPass() override { addPass(createSPEX64ExpandPseudoPass()); }
+  void addPreEmitPass() override {
+    addPass(createSPEX64WrapCallsPass());
+    addPass(createSPEX64ExpandPseudoPass());
+  }
 };
 } // namespace
 

@@ -157,46 +157,6 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
     ReplaceNode(Node, N);
     return;
   }
-  case SPEX64ISD::BR_CC: {
-    SDValue Chain = Node->getOperand(0);
-    SDValue LHS = Node->getOperand(1);
-    SDValue RHS = Node->getOperand(2);
-    SDValue CC = Node->getOperand(3);
-    SDValue Dest = Node->getOperand(4);
-
-    auto *CCNode = cast<CondCodeSDNode>(CC);
-    SDValue CCVal = CurDAG->getTargetConstant(CCNode->get(), DL, MVT::i32);
-
-    auto MaterializeConst = [&](SDValue V) -> SDValue {
-      auto *C = dyn_cast<ConstantSDNode>(V);
-      if (!C)
-        return V;
-      unsigned Opc =
-          V.getValueType() == MVT::i32 ? SPEX64::PSEUDO_LI32 : SPEX64::PSEUDO_LI64;
-      SDValue Imm = CurDAG->getTargetConstant(C->getSExtValue(), DL,
-                                              V.getValueType());
-      return SDValue(CurDAG->getMachineNode(Opc, DL, V.getValueType(), Imm), 0);
-    };
-
-    LHS = MaterializeConst(LHS);
-    RHS = MaterializeConst(RHS);
-
-    unsigned BrOpc = LHS.getValueType() == MVT::i32
-                         ? SPEX64::PSEUDO_BR_CC32
-                         : SPEX64::PSEUDO_BR_CC64;
-    SDValue Ops[] = {LHS, RHS, Dest, CCVal, Chain};
-    CurDAG->SelectNodeTo(Node, BrOpc, MVT::Other, Ops);
-    return;
-  }
-  case SPEX64ISD::BR: {
-    SDValue Chain = Node->getOperand(0);
-    SDValue Dest = Node->getOperand(1);
-    SDValue Ops[] = {Dest, Chain};
-    CurDAG->SelectNodeTo(Node, SPEX64::PSEUDO_BR, MVT::Other, Ops);
-    return;
-  }
-  default:
-    break;
   }
 
   SelectCode(Node);

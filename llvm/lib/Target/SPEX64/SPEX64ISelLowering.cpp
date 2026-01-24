@@ -12,6 +12,7 @@
 #include "SPEX64TargetMachine.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/CodeGen/CallingConvLower.h"
+#include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/SelectionDAGNodes.h"
 #include "llvm/Support/ErrorHandling.h"
 
