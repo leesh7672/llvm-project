@@ -44,8 +44,8 @@ SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
   setOperationAction(ISD::ZERO_EXTEND, MVT::i64, Custom);
   setOperationAction(ISD::SIGN_EXTEND, MVT::i8, Expand);
   setOperationAction(ISD::SIGN_EXTEND, MVT::i16, Expand);
-  setOperationAction(ISD::SIGN_EXTEND, MVT::i32, Expand);
-  setOperationAction(ISD::SIGN_EXTEND, MVT::i64, Expand);
+  setOperationAction(ISD::SIGN_EXTEND, MVT::i32, Custom);
+  setOperationAction(ISD::SIGN_EXTEND, MVT::i64, Custom);
   setOperationAction(ISD::ANY_EXTEND, MVT::i8, Expand);
   setOperationAction(ISD::ANY_EXTEND, MVT::i16, Expand);
   setOperationAction(ISD::ANY_EXTEND, MVT::i32, Expand);
@@ -136,6 +136,29 @@ SDValue SPEX64TargetLowering::LowerOperation(SDValue Op,
     }
     break;
   }
+  case ISD::SIGN_EXTEND: {
+    SDValue Src = Op.getOperand(0);
+    EVT DstVT = Op.getValueType();
+    EVT SrcVT = Src.getValueType();
+    // We only custom-lower i32/i64 sign-extends from smaller integer types.
+    if (!(DstVT == MVT::i32 || DstVT == MVT::i64))
+      break;
+    unsigned DstBits = DstVT.getSizeInBits();
+    unsigned SrcBits = SrcVT.getSizeInBits();
+    if (!(SrcBits == 8 || SrcBits == 16 || SrcBits == 32) || SrcBits >= DstBits)
+      break;
+
+    // sext(x) = sra(shl(anyext(x), DstBits-SrcBits), DstBits-SrcBits)
+    unsigned ShAmt = DstBits - SrcBits;
+    SDLoc DL(Op);
+    SDValue X = DAG.getNode(ISD::ANY_EXTEND, DL, DstVT, Src);
+    SDValue Sh = DAG.getNode(ISD::SHL, DL, DstVT, X,
+                             DAG.getConstant(ShAmt, DL, DstVT));
+    SDValue Sa = DAG.getNode(ISD::SRA, DL, DstVT, Sh,
+                             DAG.getConstant(ShAmt, DL, DstVT));
+    return Sa;
+  }
+
   case ISD::GlobalAddress: {
     auto *GA = cast<GlobalAddressSDNode>(Op);
     return DAG.getTargetGlobalAddress(GA->getGlobal(), SDLoc(Op),
