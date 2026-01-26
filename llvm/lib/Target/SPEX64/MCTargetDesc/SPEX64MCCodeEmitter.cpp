@@ -68,7 +68,18 @@ void SPEX64MCCodeEmitter::encodeInstruction(const MCInst &MI,
   if (W0 & (1u << 16)) {
     Size = (W0 & (1u << 15)) ? 12 : 8;
   }
+  const MCExpr *Expr = nullptr;
+  for (unsigned I = 0, E = MI.getNumOperands(); I < E; ++I) {
+    const MCOperand &Op = MI.getOperand(I);
+    if (Op.isExpr()) {
+      Expr = Op.getExpr();
+      break;
+    }
+  }
+
   if (Size <= 4) {
+    if (Expr)
+      Fixups.push_back(MCFixup::create(0, Expr, FK_Data_4));
     support::endian::write(CB, W0, endianness::little);
     return;
   }
