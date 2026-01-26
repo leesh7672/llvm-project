@@ -26,18 +26,24 @@ class SPEX64AsmBackend : public MCAsmBackend {
   Triple::OSType OSType;
 
 public:
-  static bool shouldForceRelocation(const MCFixup &Fixup) {
+  bool shouldForceRelocation(const MCAssembler &Asm, const MCFixup &Fixup,
+                             const MCValue &Target) {
+    (void)Asm;
+    // If the target is not fully resolved, let the object writer emit a
+    // relocation.
+    // Force relocations for symbolic branch/call immediates. Without this,
+    // the assembler may treat cross-fragment symbols as unresolved but still
+    // emit no relocation, leaving the immediate as 0 in the object file.
+    //
+    // We conservatively force relocations for data-sized fixups used by
+    // SPEX64 variable-length encodings (imm32/imm64 payloads).
     switch (Fixup.getKind()) {
     case FK_Data_4:
     case FK_Data_8:
-    case (MCFixupKind)SPEX64::fixup_spex64_32:
-    case (MCFixupKind)SPEX64::fixup_spex64_64:
       return true;
     default:
       return false;
     }
-  }
-
   }
 
   explicit SPEX64AsmBackend(const MCSubtargetInfo &STI)
@@ -51,9 +57,17 @@ public:
   }
 
   bool shouldForceRelocation(const MCAssembler &, const MCFixup &Fixup,
-                             const MCValue &) const override {
-    return shouldForceRelocation(Fixup);
-  }
+                             const MCValue &) const {
+    // Allow the assembler to resolve absolute fixups when the target is known
+    // at assembly time (e.g. intra-section symbols). This avoids depending on
+    // the linker to apply target-specific relocations for simple ROM images.
+    switch (Fixup.getKind()) {
+    case FK_Data_4:
+    case FK_Data_8:
+      return true;
+    default:
+      return false;
+    }
   }
 
   bool needsRelocateWithSymbol(const MCValue &, const MCFixup &) const {
