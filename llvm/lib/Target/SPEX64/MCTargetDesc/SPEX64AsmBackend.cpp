@@ -74,6 +74,7 @@ public:
       return;
 
     (void)Target;
+    (void)IsResolved;
 
     // The assembler computes the resolved value and passes it in as `Value`.
     // Do NOT use Target.getConstant() here: it is often 0 for symbolic fixups.
