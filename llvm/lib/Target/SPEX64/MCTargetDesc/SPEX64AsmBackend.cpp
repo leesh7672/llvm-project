@@ -6,15 +6,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "SPEX64MCTargetDesc.h"
 #include "SPEX64FixupKinds.h"
+#include "SPEX64MCTargetDesc.h"
 #include "llvm/BinaryFormat/ELF.h"
 #include "llvm/MC/MCAsmBackend.h"
 #include "llvm/MC/MCELFObjectWriter.h"
 #include "llvm/MC/MCFixup.h"
-#include "llvm/MC/MCValue.h"
 #include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/MCTargetOptions.h"
+#include "llvm/MC/MCValue.h"
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/Endian.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -26,6 +26,14 @@ class SPEX64AsmBackend : public MCAsmBackend {
   Triple::OSType OSType;
 
 public:
+  bool shouldForceRelocation(const MCAssembler &Asm, const MCFixup &Fixup,
+                             const MCValue &Target) {
+    (void)Asm;
+    // If the target is not fully resolved, let the object writer emit a
+    // relocation.
+    return Target.isAbsolute() ? false : Target.getSymA() != nullptr;
+  }
+
   explicit SPEX64AsmBackend(const MCSubtargetInfo &STI)
       : MCAsmBackend(endianness::little),
         OSType(STI.getTargetTriple().getOS()) {}
@@ -66,9 +74,8 @@ public:
     uint64_t Value = static_cast<uint64_t>(Target.getConstant());
     Value >>= Info.TargetOffset;
 
-    uint64_t Mask = Info.TargetSize == 64
-                        ? ~0ULL
-                        : ((1ULL << Info.TargetSize) - 1);
+    uint64_t Mask =
+        Info.TargetSize == 64 ? ~0ULL : ((1ULL << Info.TargetSize) - 1);
     Value &= Mask;
 
     unsigned Offset = Fixup.getOffset();
@@ -89,17 +96,17 @@ public:
   }
 
   MCFixupKindInfo getFixupKindInfo(MCFixupKind Kind) const override {
-  switch (Kind) {
-  case (MCFixupKind)SPEX64::fixup_spex64_32:
-    // 32-bit little-endian immediate.
-    return {"fixup_spex64_32", 0, 32, 0};
-  case (MCFixupKind)SPEX64::fixup_spex64_64:
-    // 64-bit little-endian immediate.
-    return {"fixup_spex64_64", 0, 64, 0};
-  default:
-    return MCAsmBackend::getFixupKindInfo(Kind);
+    switch (Kind) {
+    case (MCFixupKind)SPEX64::fixup_spex64_32:
+      // 32-bit little-endian immediate.
+      return {"fixup_spex64_32", 0, 32, 0};
+    case (MCFixupKind)SPEX64::fixup_spex64_64:
+      // 64-bit little-endian immediate.
+      return {"fixup_spex64_64", 0, 64, 0};
+    default:
+      return MCAsmBackend::getFixupKindInfo(Kind);
+    }
   }
-}
 
   unsigned getRelocType(const MCFixup &Fixup) const {
     switch (Fixup.getKind()) {
