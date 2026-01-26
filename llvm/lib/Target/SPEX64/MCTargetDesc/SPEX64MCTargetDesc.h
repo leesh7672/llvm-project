@@ -10,6 +10,7 @@
 #define LLVM_LIB_TARGET_SPEX64_MCTARGETDESC_SPEX64MCTARGETDESC_H
 
 #include <memory>
+#include "SPEX64FixupKinds.h"
 
 namespace llvm {
 class MCAsmBackend;
