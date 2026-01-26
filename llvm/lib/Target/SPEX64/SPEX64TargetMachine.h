@@ -10,7 +10,7 @@
 #define LLVM_LIB_TARGET_SPEX64_SPEX64TARGETMACHINE_H
 
 namespace llvm {
-  class SPEX64TargetMachine;
+class SPEX64TargetMachine;
 } // namespace llvm
 
 #include "SPEX64Subtarget.h"

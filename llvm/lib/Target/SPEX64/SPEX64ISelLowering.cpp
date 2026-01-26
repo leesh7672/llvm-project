@@ -29,7 +29,6 @@ SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
   addRegisterClass(MVT::i16, &SPEX64::GPRRegClass);
   addRegisterClass(MVT::i8, &SPEX64::GPRRegClass);
 
-
   computeRegisterProperties(ST.getRegisterInfo());
 
   setOperationAction(ISD::Constant, MVT::i8, Promote);
@@ -48,14 +47,6 @@ SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
   setOperationAction(ISD::ANY_EXTEND, MVT::i64, Expand);
   setOperationAction(ISD::BR, MVT::Other, Custom);
   setOperationAction(ISD::BR_CC, MVT::i8, Custom);
-  // Shifts: we only have immediate shifts. Custom-lower constant shifts into
-  // SPEX64ISD::*_I target nodes; non-constant shifts will be expanded.
-  setOperationAction(ISD::SHL, MVT::i32, Custom);
-  setOperationAction(ISD::SHL, MVT::i64, Custom);
-  setOperationAction(ISD::SRL, MVT::i32, Custom);
-  setOperationAction(ISD::SRL, MVT::i64, Custom);
-  setOperationAction(ISD::SRA, MVT::i32, Custom);
-  setOperationAction(ISD::SRA, MVT::i64, Custom);
   setOperationAction(ISD::BR_CC, MVT::i16, Custom);
   setOperationAction(ISD::BR_CC, MVT::i32, Custom);
   setOperationAction(ISD::BR_CC, MVT::i64, Custom);

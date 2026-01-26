@@ -23,9 +23,6 @@ enum NodeType : unsigned {
   RET,
   BR,
   BR_CC,
-  SHL_I,
-  SRL_I,
-  SRA_I,
   LSTOP,
   LWAIT,
   LWAKE,
@@ -55,8 +52,7 @@ public:
                       SelectionDAG &DAG) const override;
 
   SDValue LowerBR_CC(SDValue Chain, ISD::CondCode CC, SDValue LHS, SDValue RHS,
-                     SDValue Dest, const SDLoc &DL,
-                     SelectionDAG &DAG) const;
+                     SDValue Dest, const SDLoc &DL, SelectionDAG &DAG) const;
 
   SDValue LowerCall(TargetLowering::CallLoweringInfo &CLI,
                     SmallVectorImpl<SDValue> &InVals) const override;
@@ -66,7 +62,8 @@ public:
 private:
   SDValue lowerCallResult(SDValue Chain, SDValue InGlue, const SDLoc &DL,
                           const SmallVectorImpl<ISD::InputArg> &Ins,
-                          SelectionDAG &DAG, SmallVectorImpl<SDValue> &InVals) const;
+                          SelectionDAG &DAG,
+                          SmallVectorImpl<SDValue> &InVals) const;
 };
 
 } // namespace llvm

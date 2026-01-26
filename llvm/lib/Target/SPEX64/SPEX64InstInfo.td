@@ -26,16 +26,6 @@ def CallSeqStart : SDNode<"ISD::CALLSEQ_START", SDT_SPEX64CallSeqStart,
 def CallSeqEnd   : SDNode<"ISD::CALLSEQ_END", SDT_SPEX64CallSeqEnd,
                           [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue]>;
 
-// Shift-with-immediate lowering. The hardware shifts RX by an immediate.
-// We lower SHL/SRL/SRA with constant shift amounts to these target nodes,
-// and then select pseudos that expand into RX moves.
-def SDT_SPEX64ShiftI : SDTypeProfile<1, 2, [
-  SDTCisSameAs<0, 1>, SDTCisInt<0>, SDTCisVT<2, i32>
-]>;
-def SPEX64shl_i : SDNode<"SPEX64ISD::SHL_I", SDT_SPEX64ShiftI>;
-def SPEX64srl_i : SDNode<"SPEX64ISD::SRL_I", SDT_SPEX64ShiftI>;
-def SPEX64sra_i : SDNode<"SPEX64ISD::SRA_I", SDT_SPEX64ShiftI>;
-
 def SPEX64Imm9AsmOperand : AsmOperandClass {
   let Name = "SPEX64Imm9";
   let ParserMethod = "parseImm";
@@ -841,7 +831,6 @@ def : Pat<(xor i32:$lhs, SPEX64Imm32Pat:$imm),
 def : Pat<(xor i64:$lhs, SPEX64Imm64Pat:$imm),
           (PSEUDO_XOR64ri GPR:$lhs, imm:$imm)>;
 
-// Shift patterns: do NOT match immediates with i32imm/i64imm in Pat<>; use PatLeaf.
 def : Pat<(shl i32:$lhs, SPEX64Imm32Pat:$imm),
           (PSEUDO_SHL32ri GPR:$lhs, imm:$imm)>;
 def : Pat<(shl i64:$lhs, SPEX64Imm32Pat:$imm),
