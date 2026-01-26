@@ -26,8 +26,7 @@ class SPEX64DAGToDAGISel final : public SelectionDAGISel {
   const SPEX64Subtarget *Subtarget = nullptr;
 
 public:
-  explicit SPEX64DAGToDAGISel(SPEX64TargetMachine &TM)
-      : SelectionDAGISel(TM) {}
+  explicit SPEX64DAGToDAGISel(SPEX64TargetMachine &TM) : SelectionDAGISel(TM) {}
 
   bool runOnMachineFunction(MachineFunction &MF) override {
     Subtarget = &MF.getSubtarget<SPEX64Subtarget>();
@@ -46,8 +45,7 @@ class SPEX64DAGToDAGISelLegacy : public SelectionDAGISelLegacy {
 public:
   static char ID;
   SPEX64DAGToDAGISelLegacy(SPEX64TargetMachine &TM)
-      : SelectionDAGISelLegacy(ID,
-                               std::make_unique<SPEX64DAGToDAGISel>(TM)) {}
+      : SelectionDAGISelLegacy(ID, std::make_unique<SPEX64DAGToDAGISel>(TM)) {}
 };
 } // end anonymous namespace
 
@@ -99,7 +97,7 @@ bool SPEX64DAGToDAGISel::SelectAddr(SDValue Addr, SDValue &Base,
 }
 
 bool SPEX64DAGToDAGISel::SelectAddrRR(SDValue Addr, SDValue &Base,
-                                     SDValue &Index) {
+                                      SDValue &Index) {
   if (Addr.getOpcode() == ISD::ADD || Addr.getOpcode() == ISD::SUB) {
     SDValue LHS = Addr.getOperand(0);
     SDValue RHS = Addr.getOperand(1);
@@ -111,7 +109,6 @@ bool SPEX64DAGToDAGISel::SelectAddrRR(SDValue Addr, SDValue &Base,
   }
   return false;
 }
-
 
 void SPEX64DAGToDAGISel::Select(SDNode *Node) {
   if (Node->isMachineOpcode()) {
@@ -158,8 +155,7 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
     case ISD::GlobalAddress: {
       auto *GA = cast<GlobalAddressSDNode>(Node);
       Addr = CurDAG->getTargetGlobalAddress(
-          GA->getGlobal(), DL, MVT::i64, GA->getOffset(),
-          GA->getTargetFlags());
+          GA->getGlobal(), DL, MVT::i64, GA->getOffset(), GA->getTargetFlags());
       break;
     }
     case ISD::ExternalSymbol: {
@@ -182,16 +178,16 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
     }
     case ISD::BlockAddress: {
       auto *BA = cast<BlockAddressSDNode>(Node);
-      Addr = CurDAG->getTargetBlockAddress(BA->getBlockAddress(), MVT::i64,
-                                           BA->getOffset(),
-                                           BA->getTargetFlags());
+      Addr =
+          CurDAG->getTargetBlockAddress(BA->getBlockAddress(), MVT::i64,
+                                        BA->getOffset(), BA->getTargetFlags());
       break;
     }
     default:
       break;
     }
-    SDNode *Res = CurDAG->getMachineNode(SPEX64::PSEUDO_LI64, DL, MVT::i64,
-                                         Addr);
+    SDNode *Res =
+        CurDAG->getMachineNode(SPEX64::PSEUDO_LI64, DL, MVT::i64, Addr);
     ReplaceNode(Node, Res);
     return;
   }
@@ -229,32 +225,32 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
     return;
   }
 
-case SPEX64ISD::SHL_I:
-case SPEX64ISD::SRL_I:
-case SPEX64ISD::SRA_I: {
-  EVT VT = Node->getValueType(0);
-  unsigned Bits = VT.getSizeInBits();
-  if (Bits != 32 && Bits != 64)
-    break;
+  case SPEX64ISD::SHL_I:
+  case SPEX64ISD::SRL_I:
+  case SPEX64ISD::SRA_I: {
+    EVT VT = Node->getValueType(0);
+    unsigned Bits = VT.getSizeInBits();
+    if (Bits != 32 && Bits != 64)
+      break;
 
-  unsigned Opcode = Node->getOpcode();
-  const unsigned PseudoOpc =
-      (Opcode == SPEX64ISD::SHL_I)
-          ? (Bits == 32 ? SPEX64::PSEUDO_SHL32ri : SPEX64::PSEUDO_SHL64ri)
-          : (Opcode == SPEX64ISD::SRL_I)
-                ? (Bits == 32 ? SPEX64::PSEUDO_SRL32ri : SPEX64::PSEUDO_SRL64ri)
-                : (Bits == 32 ? SPEX64::PSEUDO_SRA32ri : SPEX64::PSEUDO_SRA64ri);
+    unsigned Opcode = Node->getOpcode();
+    const unsigned PseudoOpc =
+        (Opcode == SPEX64ISD::SHL_I)
+            ? (Bits == 32 ? SPEX64::PSEUDO_SHL32ri : SPEX64::PSEUDO_SHL64ri)
+        : (Opcode == SPEX64ISD::SRL_I)
+            ? (Bits == 32 ? SPEX64::PSEUDO_SRL32ri : SPEX64::PSEUDO_SRL64ri)
+            : (Bits == 32 ? SPEX64::PSEUDO_SRA32ri : SPEX64::PSEUDO_SRA64ri);
 
-  auto *AmtC = dyn_cast<ConstantSDNode>(Node->getOperand(1));
-  if (!AmtC)
-    break;
-  SDValue Amt = CurDAG->getTargetConstant(AmtC->getZExtValue(), DL, MVT::i32);
+    auto *AmtC = dyn_cast<ConstantSDNode>(Node->getOperand(1));
+    if (!AmtC)
+      break;
+    SDValue Amt = CurDAG->getTargetConstant(AmtC->getZExtValue(), DL, MVT::i32);
 
-  SDNode *Res = CurDAG->getMachineNode(PseudoOpc, DL, VT,
-                                       Node->getOperand(0), Amt);
-  ReplaceNode(Node, Res);
-  return;
-}
+    SDNode *Res =
+        CurDAG->getMachineNode(PseudoOpc, DL, VT, Node->getOperand(0), Amt);
+    ReplaceNode(Node, Res);
+    return;
+  }
 
   case SPEX64ISD::CALL: {
     SDValue Chain = Node->getOperand(0);
@@ -265,8 +261,7 @@ case SPEX64ISD::SRA_I: {
     case ISD::GlobalAddress: {
       auto *GA = cast<GlobalAddressSDNode>(Callee);
       Callee = CurDAG->getTargetGlobalAddress(
-          GA->getGlobal(), DL, MVT::i64, GA->getOffset(),
-          GA->getTargetFlags());
+          GA->getGlobal(), DL, MVT::i64, GA->getOffset(), GA->getTargetFlags());
       break;
     }
     case ISD::ExternalSymbol: {
@@ -277,8 +272,8 @@ case SPEX64ISD::SRA_I: {
     }
     case ISD::ConstantPool: {
       auto *CP = cast<ConstantPoolSDNode>(Callee);
-      Callee = CurDAG->getTargetConstantPool(
-          CP->getConstVal(), MVT::i64, CP->getAlign(), CP->getOffset());
+      Callee = CurDAG->getTargetConstantPool(CP->getConstVal(), MVT::i64,
+                                             CP->getAlign(), CP->getOffset());
       break;
     }
     case ISD::TargetGlobalAddress:
@@ -320,7 +315,7 @@ case SPEX64ISD::SRA_I: {
 
   case SPEX64ISD::BR: {
     SDValue Chain = Node->getOperand(0);
-    SDValue Dest  = Node->getOperand(1); // BasicBlock
+    SDValue Dest = Node->getOperand(1); // BasicBlock
     SDValue Ops[] = {Dest, Chain};
     SDNode *Br = CurDAG->getMachineNode(SPEX64::JMP32, DL, MVT::Other, Ops);
     ReplaceNode(Node, Br);
@@ -328,10 +323,10 @@ case SPEX64ISD::SRA_I: {
   }
   case SPEX64ISD::BR_CC: {
     SDValue Chain = Node->getOperand(0);
-    SDValue LHS   = Node->getOperand(1);
-    SDValue RHS   = Node->getOperand(2);
+    SDValue LHS = Node->getOperand(1);
+    SDValue RHS = Node->getOperand(2);
     auto CC = cast<CondCodeSDNode>(Node->getOperand(3))->get();
-    SDValue Dest  = Node->getOperand(4);
+    SDValue Dest = Node->getOperand(4);
 
     bool Is64 = (LHS.getValueType() == MVT::i64);
 
@@ -370,16 +365,28 @@ case SPEX64ISD::SRA_I: {
     // Select BCC opcode based on condition code.
     unsigned BccOpc = 0;
     switch (CC) {
-    case ISD::SETEQ: BccOpc = Is64 ? SPEX64::BCC_eq_64 : SPEX64::BCC_eq_32; break;
-    case ISD::SETNE: BccOpc = Is64 ? SPEX64::BCC_ne_64 : SPEX64::BCC_ne_32; break;
+    case ISD::SETEQ:
+      BccOpc = Is64 ? SPEX64::BCC_eq_64 : SPEX64::BCC_eq_32;
+      break;
+    case ISD::SETNE:
+      BccOpc = Is64 ? SPEX64::BCC_ne_64 : SPEX64::BCC_ne_32;
+      break;
     case ISD::SETLT:
-    case ISD::SETULT: BccOpc = Is64 ? SPEX64::BCC_lt_64 : SPEX64::BCC_lt_32; break;
+    case ISD::SETULT:
+      BccOpc = Is64 ? SPEX64::BCC_lt_64 : SPEX64::BCC_lt_32;
+      break;
     case ISD::SETLE:
-    case ISD::SETULE: BccOpc = Is64 ? SPEX64::BCC_le_64 : SPEX64::BCC_le_32; break;
+    case ISD::SETULE:
+      BccOpc = Is64 ? SPEX64::BCC_le_64 : SPEX64::BCC_le_32;
+      break;
     case ISD::SETGT:
-    case ISD::SETUGT: BccOpc = Is64 ? SPEX64::BCC_gt_64 : SPEX64::BCC_gt_32; break;
+    case ISD::SETUGT:
+      BccOpc = Is64 ? SPEX64::BCC_gt_64 : SPEX64::BCC_gt_32;
+      break;
     case ISD::SETGE:
-    case ISD::SETUGE: BccOpc = Is64 ? SPEX64::BCC_ge_64 : SPEX64::BCC_ge_32; break;
+    case ISD::SETUGE:
+      BccOpc = Is64 ? SPEX64::BCC_ge_64 : SPEX64::BCC_ge_32;
+      break;
     default:
       // Fallback: treat as !=
       BccOpc = Is64 ? SPEX64::BCC_ne_64 : SPEX64::BCC_ne_32;
@@ -400,13 +407,14 @@ case SPEX64ISD::SRA_I: {
     EVT OutVT = Node->getValueType(0);
     EVT InVT = cast<VTSDNode>(Node->getOperand(1))->getVT();
 
-    // We only handle the common integer cases here (e.g. i64 sext_inreg(..., i8)).
+    // We only handle the common integer cases here (e.g. i64 sext_inreg(...,
+    // i8)).
     if (!OutVT.isSimple() || !InVT.isSimple() || !OutVT.isInteger() ||
         !InVT.isInteger())
       break;
 
     unsigned OutBits = OutVT.getSimpleVT().getSizeInBits();
-    unsigned InBits  = InVT.getSimpleVT().getSizeInBits();
+    unsigned InBits = InVT.getSimpleVT().getSizeInBits();
     if (InBits >= OutBits)
       break;
 
@@ -418,10 +426,11 @@ case SPEX64ISD::SRA_I: {
     SDValue Src = Node->getOperand(0);
     SDValue Imm = CurDAG->getTargetConstant(ShAmt, DL, MVT::i32);
 
-    unsigned MovToRX   = (OutBits == 32) ? SPEX64::MOVMOV32  : SPEX64::MOVMOV64;
-    unsigned MovFromRX = (OutBits == 32) ? SPEX64::MOVMOV32_R: SPEX64::MOVMOV64_R;
-    unsigned ShlOpc    = (OutBits == 32) ? SPEX64::SHL32  : SPEX64::SHL64;
-    unsigned SraOpc    = (OutBits == 32) ? SPEX64::SAR32  : SPEX64::SAR64;
+    unsigned MovToRX = (OutBits == 32) ? SPEX64::MOVMOV32 : SPEX64::MOVMOV64;
+    unsigned MovFromRX =
+        (OutBits == 32) ? SPEX64::MOVMOV32_R : SPEX64::MOVMOV64_R;
+    unsigned ShlOpc = (OutBits == 32) ? SPEX64::SHL32 : SPEX64::SHL64;
+    unsigned SraOpc = (OutBits == 32) ? SPEX64::SAR32 : SPEX64::SAR64;
 
     SDNode *MovN = CurDAG->getMachineNode(MovToRX, DL, MVT::Glue, Src);
     SDValue Glue(MovN, 0);
@@ -432,8 +441,8 @@ case SPEX64ISD::SRA_I: {
     SDNode *SraN = CurDAG->getMachineNode(SraOpc, DL, MVT::Glue, Imm, Glue);
     Glue = SDValue(SraN, 0);
 
-    SDNode *OutN = CurDAG->getMachineNode(
-        MovFromRX, DL, OutVT.getSimpleVT(), Glue);
+    SDNode *OutN =
+        CurDAG->getMachineNode(MovFromRX, DL, OutVT.getSimpleVT(), Glue);
 
     ReplaceNode(Node, OutN);
     return;

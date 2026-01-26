@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/BinaryFormat/ELF.h"
 #include "SPEX64FixupKinds.h"
+#include "llvm/BinaryFormat/ELF.h"
 #include "llvm/MC/MCELFObjectWriter.h"
 #include "llvm/MC/MCFixup.h"
 #include "llvm/MC/MCObjectWriter.h"
@@ -23,7 +23,8 @@ public:
   ~SPEX64ELFObjectWriter() override = default;
 
 protected:
-  unsigned getRelocType(const MCFixup &Fixup, const MCValue &, bool) const override {
+  unsigned getRelocType(const MCFixup &Fixup, const MCValue &,
+                        bool) const override {
     switch (Fixup.getKind()) {
     case FK_Data_4:
       return ELF::R_SPEX64_32;

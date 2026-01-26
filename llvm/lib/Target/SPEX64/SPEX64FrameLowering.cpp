@@ -8,14 +8,14 @@
 
 #include "SPEX64FrameLowering.h"
 
-#include "llvm/CodeGen/MachineFrameInfo.h"
-#include "llvm/CodeGen/MachineFunction.h"
-#include "llvm/CodeGen/TargetInstrInfo.h"
-#include "llvm/CodeGen/MachineInstrBuilder.h"
-#include "llvm/Support/MathExtras.h"
 #include "SPEX64.h"
 #include "SPEX64InstrInfo.h"
 #include "SPEX64Subtarget.h"
+#include "llvm/CodeGen/MachineFrameInfo.h"
+#include "llvm/CodeGen/MachineFunction.h"
+#include "llvm/CodeGen/MachineInstrBuilder.h"
+#include "llvm/CodeGen/TargetInstrInfo.h"
+#include "llvm/Support/MathExtras.h"
 
 using namespace llvm;
 
@@ -30,11 +30,12 @@ bool SPEX64FrameLowering::hasFPImpl(const MachineFunction &MF) const {
   const MachineFrameInfo &MFI = MF.getFrameInfo();
 
   return MFI.hasVarSizedObjects() || MFI.isFrameAddressTaken() ||
-         MFI.hasStackMap() || MFI.hasPatchPoint() || MFI.hasOpaqueSPAdjustment();
+         MFI.hasStackMap() || MFI.hasPatchPoint() ||
+         MFI.hasOpaqueSPAdjustment();
 }
 
 void SPEX64FrameLowering::emitPrologue(MachineFunction &MF,
-                                      MachineBasicBlock &MBB) const {
+                                       MachineBasicBlock &MBB) const {
   // No-op for now.
   // Later: adjust SP, spill callee-saved regs, set FP, etc.
   (void)MF;
@@ -42,22 +43,22 @@ void SPEX64FrameLowering::emitPrologue(MachineFunction &MF,
 }
 
 void SPEX64FrameLowering::emitEpilogue(MachineFunction &MF,
-                                      MachineBasicBlock &MBB) const {
+                                       MachineBasicBlock &MBB) const {
   // No-op for now.
   // Later: restore callee-saved regs, restore SP, etc.
   (void)MF;
   (void)MBB;
 }
 
-bool SPEX64FrameLowering::hasReservedCallFrame(const MachineFunction &MF) const {
+bool SPEX64FrameLowering::hasReservedCallFrame(
+    const MachineFunction &MF) const {
   // If you don't model call frames (no stack args), return false so LLVM
   // won't try to reserve fixed call frame space.
   (void)MF;
   return false;
 }
 
-MachineBasicBlock::iterator
-SPEX64FrameLowering::eliminateCallFramePseudoInstr(
+MachineBasicBlock::iterator SPEX64FrameLowering::eliminateCallFramePseudoInstr(
     MachineFunction &MF, MachineBasicBlock &MBB,
     MachineBasicBlock::iterator I) const {
   // LLVM inserts ADJCALLSTACKDOWN / ADJCALLSTACKUP around calls.
@@ -67,8 +68,8 @@ SPEX64FrameLowering::eliminateCallFramePseudoInstr(
 }
 
 void SPEX64FrameLowering::determineCalleeSaves(MachineFunction &MF,
-                                              BitVector &SavedRegs,
-                                              RegScavenger *RS) const {
+                                               BitVector &SavedRegs,
+                                               RegScavenger *RS) const {
   // Minimal bring-up: no callee-saved regs are spilled.
   // If you later define CSR sets and want spills, mark them here.
   (void)MF;

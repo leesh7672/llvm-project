@@ -15,8 +15,7 @@ using namespace llvm;
 
 SPEX64AsmPrinter::SPEX64AsmPrinter(TargetMachine &TM,
                                    std::unique_ptr<MCStreamer> Streamer)
-    : AsmPrinter(TM, std::move(Streamer)), MCInstLowering(OutContext, *this) {
-}
+    : AsmPrinter(TM, std::move(Streamer)), MCInstLowering(OutContext, *this) {}
 
 void SPEX64AsmPrinter::emitInstruction(const MachineInstr *MI) {
   MCInst TmpInst;

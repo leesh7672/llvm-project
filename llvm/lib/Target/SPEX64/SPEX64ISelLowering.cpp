@@ -57,7 +57,6 @@ SPEX64TargetLowering::SPEX64TargetLowering(const SPEX64TargetMachine &TM,
   setOperationAction(ISD::SRA, MVT::i32, Custom);
   setOperationAction(ISD::SRA, MVT::i64, Custom);
 
-
   setOperationAction(ISD::BRCOND, MVT::Other, Expand);
   setOperationAction(ISD::SETCC, MVT::i32, Expand);
   setOperationAction(ISD::SETCC, MVT::i64, Expand);
@@ -265,9 +264,8 @@ SPEX64TargetLowering::LowerReturn(SDValue Chain, CallingConv::ID, bool,
   return DAG.getNode(SPEX64ISD::RET, DL, MVT::Other, Chain);
 }
 
-
 SDValue SPEX64TargetLowering::LowerShift(SDValue Op, SelectionDAG &DAG,
-                                        unsigned TgtOpc) const {
+                                         unsigned TgtOpc) const {
   SDLoc DL(Op);
   EVT VT = Op.getValueType();
 

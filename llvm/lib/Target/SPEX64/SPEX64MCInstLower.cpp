@@ -1,4 +1,5 @@
-//===-- SPEX64MCInstLower.cpp - Lower SPEX64 MachineInstr to MCInst --------===//
+//===-- SPEX64MCInstLower.cpp - Lower SPEX64 MachineInstr to MCInst
+//--------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -49,9 +50,9 @@ SPEX64MCInstLower::getJumpTableSymbol(const MachineOperand &MO) const {
     report_fatal_error("SPEX64: unsupported target flags on jumptable");
   const DataLayout &DL = Printer.getDataLayout();
   SmallString<64> Name;
-  raw_svector_ostream(Name) << DL.getPrivateGlobalPrefix() << "JTI"
-                            << Printer.getFunctionNumber() << '_'
-                            << MO.getIndex();
+  raw_svector_ostream(Name)
+      << DL.getPrivateGlobalPrefix() << "JTI" << Printer.getFunctionNumber()
+      << '_' << MO.getIndex();
   return Ctx.getOrCreateSymbol(Name);
 }
 
@@ -61,9 +62,9 @@ SPEX64MCInstLower::getConstantPoolSymbol(const MachineOperand &MO) const {
     report_fatal_error("SPEX64: unsupported target flags on constpool");
   const DataLayout &DL = Printer.getDataLayout();
   SmallString<64> Name;
-  raw_svector_ostream(Name) << DL.getPrivateGlobalPrefix() << "CPI"
-                            << Printer.getFunctionNumber() << '_'
-                            << MO.getIndex();
+  raw_svector_ostream(Name)
+      << DL.getPrivateGlobalPrefix() << "CPI" << Printer.getFunctionNumber()
+      << '_' << MO.getIndex();
   return Ctx.getOrCreateSymbol(Name);
 }
 

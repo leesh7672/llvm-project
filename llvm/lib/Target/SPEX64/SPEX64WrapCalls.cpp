@@ -42,7 +42,9 @@ public:
   static char ID;
   SPEX64WrapCalls() : MachineFunctionPass(ID) {}
 
-  StringRef getPassName() const override { return "SPEX64 Wrap Calls (lstop/lwait/lwake)"; }
+  StringRef getPassName() const override {
+    return "SPEX64 Wrap Calls (lstop/lwait/lwake)";
+  }
 
   bool runOnMachineFunction(MachineFunction &MF) override {
     const auto &STI = MF.getSubtarget<SPEX64Subtarget>();
@@ -57,9 +59,9 @@ public:
         // Prefer opcode checks because some calls may be pseudos pre-expansion.
         const unsigned Opc = MI.getOpcode();
         const bool IsSPEX64Call =
-            MI.isCall() ||
-            Opc == SPEX64::CALL || Opc == SPEX64::CALLR ||
-            Opc == SPEX64::CALL32 || Opc == SPEX64::CALL64 || Opc == SPEX64::CALL_R;
+            MI.isCall() || Opc == SPEX64::CALL || Opc == SPEX64::CALLR ||
+            Opc == SPEX64::CALL32 || Opc == SPEX64::CALL64 ||
+            Opc == SPEX64::CALL_R;
 
         if (!IsSPEX64Call)
           continue;
@@ -88,7 +90,6 @@ public:
 } // end anonymous namespace
 
 char SPEX64WrapCalls::ID = 0;
-
 
 MachineFunctionPass *llvm::createSPEX64WrapCallsPass() {
   return new SPEX64WrapCalls();
