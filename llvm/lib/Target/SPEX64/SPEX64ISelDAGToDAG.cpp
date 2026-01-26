@@ -299,10 +299,16 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
 
     Ops.push_back(Chain);
 
-    unsigned CallOpc = SPEX64::CALL;
-    if (Callee.getOpcode() == ISD::Register ||
-        Callee.getOpcode() == ISD::CopyFromReg)
-      CallOpc = SPEX64::CALLR;
+    unsigned CallOpc = SPEX64::CALLR;
+    // Direct calls use the immediate form (CALL). Everything else is an
+    // indirect call through a value (which will be selected into a register),
+    // so must use CALLR to avoid losing the target and encoding an all-zero
+    // immediate.
+    if (Callee.getOpcode() == ISD::TargetGlobalAddress ||
+        Callee.getOpcode() == ISD::TargetExternalSymbol ||
+        Callee.getOpcode() == ISD::TargetConstantPool ||
+        Callee.getOpcode() == ISD::TargetBlockAddress)
+      CallOpc = SPEX64::CALL;
 
     if (Glue.getNode())
       Ops.push_back(Glue);
