@@ -63,15 +63,20 @@ public:
   }
 
   void applyFixup(const MCFragment &Fragment, const MCFixup &Fixup,
-                  const MCValue &Target, uint8_t *Data, uint64_t,
-                  bool) override {
+                  const MCValue &Target, uint8_t *Data, uint64_t Value,
+                  bool IsResolved) override {
+    (void)IsResolved;
+
     (void)Fragment;
 
     const MCFixupKindInfo &Info = getFixupKindInfo(Fixup.getKind());
     if (Info.TargetSize == 0)
       return;
 
-    uint64_t Value = static_cast<uint64_t>(Target.getConstant());
+    (void)Target;
+
+    // The assembler computes the resolved value and passes it in as `Value`.
+    // Do NOT use Target.getConstant() here: it is often 0 for symbolic fixups.
     Value >>= Info.TargetOffset;
 
     uint64_t Mask =
@@ -81,7 +86,7 @@ public:
     unsigned Offset = Fixup.getOffset();
     unsigned NumBytes = (Info.TargetSize + 7) / 8;
     for (unsigned I = 0; I < NumBytes; ++I) {
-      Data[Offset + I] |= static_cast<uint8_t>(Value >> (I * 8));
+      Data[Offset + I] = static_cast<uint8_t>(Value >> (I * 8));
     }
   }
 
