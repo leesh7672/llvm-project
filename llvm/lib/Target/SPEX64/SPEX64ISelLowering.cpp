@@ -148,9 +148,9 @@ SDValue SPEX64TargetLowering::LowerOperation(SDValue Op,
     SDLoc DL(Op);
     SDValue X = DAG.getNode(ISD::ANY_EXTEND, DL, DstVT, Src);
     SDValue Sh = DAG.getNode(ISD::SHL, DL, DstVT, X,
-                             DAG.getConstant(ShAmt, DL, DstVT));
+                             DAG.getConstant(ShAmt, DL, MVT::i32));
     SDValue Sa = DAG.getNode(ISD::SRA, DL, DstVT, Sh,
-                             DAG.getConstant(ShAmt, DL, DstVT));
+                             DAG.getConstant(ShAmt, DL, MVT::i32));
     return Sa;
   }
 
