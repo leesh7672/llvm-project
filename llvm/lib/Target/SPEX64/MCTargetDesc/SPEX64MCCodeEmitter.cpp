@@ -6,7 +6,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "SPEX64FixupKinds.h"
 #include "SPEX64MCTargetDesc.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/MC/MCCodeEmitter.h"
@@ -80,8 +79,7 @@ void SPEX64MCCodeEmitter::encodeInstruction(const MCInst &MI,
 
   if (Size <= 4) {
     if (Expr)
-      Fixups.push_back(
-          MCFixup::create(0, Expr, FK_Data_4));
+      Fixups.push_back(MCFixup::create(0, Expr, FK_Data_4));
     support::endian::write(CB, W0, endianness::little);
     return;
   }
@@ -111,8 +109,7 @@ void SPEX64MCCodeEmitter::encodeInstruction(const MCInst &MI,
       Imm64 = static_cast<uint64_t>(ImmOp->getImm());
       Imm32 = static_cast<uint32_t>(Imm64);
     } else if (ImmOp->isExpr()) {
-      MCFixupKind Kind = (Size == 8) ? FK_Data_4
-                                     : FK_Data_8;
+      MCFixupKind Kind = (Size == 8) ? FK_Data_4 : FK_Data_8;
       Fixups.push_back(MCFixup::create(4, ImmOp->getExpr(), Kind));
     }
   }

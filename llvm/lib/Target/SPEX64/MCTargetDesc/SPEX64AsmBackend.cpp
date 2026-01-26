@@ -1,4 +1,4 @@
-//===-- SPEX64AsmBackend.cpp - SPEX64 assembly backend --*- C++ -*-===//
+//===-- SPEX64InstInfo.td - SPEX64 instruction properties --*- tablegen -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
