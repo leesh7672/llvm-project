@@ -123,6 +123,14 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
 
   switch (Node->getOpcode()) {
 
+  case ISD::TargetGlobalAddress:
+  case ISD::TargetExternalSymbol: {
+    SDValue Addr(Node, 0);
+    SDNode *Res = CurDAG->getMachineNode(SPEX64::PSEUDO_LI64, DL, MVT::i64, Addr);
+    ReplaceNode(Node, Res);
+    return;
+  }
+
   case ISD::Constant: {
     EVT VT = Node->getValueType(0);
     if (!VT.isInteger())
