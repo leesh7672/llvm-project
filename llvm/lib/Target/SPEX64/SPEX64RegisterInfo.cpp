@@ -46,6 +46,9 @@ BitVector SPEX64RegisterInfo::getReservedRegs(const MachineFunction &MF) const {
   // Reserve link register (return address)
   Reserved.set(SPEX64::LR);
 
+  // Reserve accumulator register (implicit operand in many ops)
+  Reserved.set(SPEX64::RX);
+
   return Reserved;
 }
 
