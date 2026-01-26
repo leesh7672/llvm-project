@@ -113,8 +113,6 @@ class SPEX64BCCInst<string asmstr, dag outs, dag ins, bits<9> k9val,
                     bits<1> i64>
     : SPEX64K9InstNoR6<asmstr, outs, ins, 0x100, 0b0, 0b00, 1, i64> {
   let k9 = k9val;
-  let isBranch = 1;
-  let isTerminator = 1;
 }
 
 def SPEX64InstrInfo : InstrInfo;
@@ -833,6 +831,7 @@ def : Pat<(xor i32:$lhs, SPEX64Imm32Pat:$imm),
 def : Pat<(xor i64:$lhs, SPEX64Imm64Pat:$imm),
           (PSEUDO_XOR64ri GPR:$lhs, imm:$imm)>;
 
+// Shift patterns: do NOT match immediates with i32imm/i64imm in Pat<>; use PatLeaf.
 def : Pat<(shl i32:$lhs, SPEX64Imm32Pat:$imm),
           (PSEUDO_SHL32ri GPR:$lhs, imm:$imm)>;
 def : Pat<(shl i64:$lhs, SPEX64Imm32Pat:$imm),
