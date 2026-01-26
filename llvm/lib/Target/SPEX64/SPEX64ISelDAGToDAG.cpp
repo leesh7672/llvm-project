@@ -123,6 +123,11 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
 
   switch (Node->getOpcode()) {
 
+  case ISD::GlobalAddress:
+  case ISD::ExternalSymbol:
+  case ISD::ConstantPool:
+  case ISD::JumpTable:
+  case ISD::BlockAddress:
   case ISD::TargetGlobalAddress:
   case ISD::TargetExternalSymbol:
   case ISD::TargetConstantPool:
@@ -207,6 +212,34 @@ case SPEX64ISD::SRA_I: {
     SDValue Callee = Node->getOperand(1);
     SDValue Glue;
 
+    switch (Callee.getOpcode()) {
+    case ISD::GlobalAddress: {
+      auto *GA = cast<GlobalAddressSDNode>(Callee);
+      Callee = CurDAG->getTargetGlobalAddress(
+          GA->getGlobal(), DL, MVT::i64, GA->getOffset(),
+          GA->getTargetFlags());
+      break;
+    }
+    case ISD::ExternalSymbol: {
+      auto *ES = cast<ExternalSymbolSDNode>(Callee);
+      Callee = CurDAG->getTargetExternalSymbol(ES->getSymbol(), MVT::i64,
+                                               ES->getTargetFlags());
+      break;
+    }
+    case ISD::ConstantPool: {
+      auto *CP = cast<ConstantPoolSDNode>(Callee);
+      Callee = CurDAG->getTargetConstantPool(
+          CP->getConstVal(), MVT::i64, CP->getAlign(), CP->getOffset());
+      break;
+    }
+    case ISD::TargetGlobalAddress:
+    case ISD::TargetExternalSymbol:
+    case ISD::TargetConstantPool:
+      break;
+    default:
+      break;
+    }
+
     SmallVector<SDValue, 8> Ops;
     for (unsigned I = 1, E = Node->getNumOperands(); I != E; ++I) {
       SDValue Op = Node->getOperand(I);
@@ -214,7 +247,10 @@ case SPEX64ISD::SRA_I: {
         Glue = Op;
         break;
       }
-      Ops.push_back(Op);
+      if (I == 1)
+        Ops.push_back(Callee);
+      else
+        Ops.push_back(Op);
     }
 
     Ops.push_back(Chain);
