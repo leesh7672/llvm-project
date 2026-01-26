@@ -255,10 +255,10 @@ def BCC_cc_64 : SPEX64BCCInst<"bcc-cc\t$target", (outs),
 
 // jmp / call / sp
 def JMP_R : SPEX64Inst<"jmp\t$r6", (outs), (ins GPR:$r6), 0x200, 0, 0b00, 0, 0>;
-def JMP32 : SPEX64InstNoR6<"jmp\t$target", (outs), (ins SPEX64Imm32:$target),
+def JMP32 : SPEX64InstNoR6<"jmp	$target", (outs), (ins brtarget:$target),
                            0x200, 0, 0b00, 1, 0> {
 }
-def JMP64 : SPEX64InstNoR6<"jmp\t$target", (outs), (ins SPEX64Imm64:$target),
+def JMP64 : SPEX64InstNoR6<"jmp	$target", (outs), (ins brtarget:$target),
                            0x200, 0, 0b00, 1, 1> {
 }
 
@@ -268,30 +268,31 @@ def CALL_R : SPEX64Inst<"call\t$r6", (outs), (ins GPR:$r6), 0x203, 0, 0b00, 0, 0
 
 let isCall = 1, Defs = [LR] in
 
-def CALL32 : SPEX64InstNoR6<"call\t$target", (outs), (ins SPEX64Imm32:$target),
+def CALL32 : SPEX64InstNoR6<"call	$target", (outs), (ins brtarget:$target),
                             0x203, 0, 0b00, 1, 0> {
 }
 let isCall = 1, Defs = [LR] in
 
-def CALL64 : SPEX64InstNoR6<"call\t$target", (outs), (ins SPEX64Imm64:$target),
+def CALL64 : SPEX64InstNoR6<"call	$target", (outs), (ins brtarget:$target),
                             0x203, 0, 0b00, 1, 1> {
 }
 
 let isCall = 1, isCodeGenOnly = 1 in
-def CALL : Pseudo<(outs), (ins SPEX64Imm64:$target), "", []>;
+def CALL : Pseudo<(outs), (ins brtarget:$target), "", []>;
 let isCall = 1, isCodeGenOnly = 1 in
 def CALLR : Pseudo<(outs), (ins GPR:$r6), "", [(Call GPR:$r6)]>;
 
 def : Pat<(Call tglobaladdr:$dst), (CALL tglobaladdr:$dst)>;
 def : Pat<(Call texternalsym:$dst), (CALL texternalsym:$dst)>;
+def : Pat<(Call tblockaddress:$dst), (CALL tblockaddress:$dst)>;
 
 def SP_RX : SPEX64Inst<"sp\t$r6", (outs), (ins GPR:$r6), 0x206, 0, 0b00, 0, 0>;
-def SP32 : SPEX64Inst<"sp\t$r6, $target", (outs),
-                      (ins GPR:$r6, SPEX64Imm32:$target),
+def SP32 : SPEX64Inst<"sp	$r6, $target", (outs),
+                      (ins GPR:$r6, brtarget:$target),
                       0x206, 0, 0b00, 1, 0> {
 }
-def SP64 : SPEX64Inst<"sp\t$r6, $target", (outs),
-                      (ins GPR:$r6, SPEX64Imm64:$target),
+def SP64 : SPEX64Inst<"sp	$r6, $target", (outs),
+                      (ins GPR:$r6, brtarget:$target),
                       0x206, 0, 0b00, 1, 1> {
 }
 
