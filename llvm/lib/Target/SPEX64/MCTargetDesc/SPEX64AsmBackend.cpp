@@ -12,7 +12,6 @@
 #include "llvm/MC/MCELFObjectWriter.h"
 #include "llvm/MC/MCFixup.h"
 #include "llvm/MC/MCValue.h"
-#include "llvm/MC/MCSymbol.h"
 #include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/MCTargetOptions.h"
 #include "llvm/MC/TargetRegistry.h"
@@ -58,17 +57,6 @@ public:
     for (unsigned I = 0; I < NumBytes; ++I) {
       Data[Offset + I] |= static_cast<uint8_t>(Value >> (I * 8));
     }
-  }
-
-  std::optional<bool> evaluateFixup(const MCFragment &, MCFixup &,
-                                    MCValue &Target,
-                                    uint64_t &Value) override {
-    const MCSymbol *SymA = Target.getAddSym();
-    if (SymA && SymA->isUndefined()) {
-      Value = Target.getConstant();
-      return false;
-    }
-    return {};
   }
 
   bool writeNopData(raw_ostream &OS, uint64_t Count,
