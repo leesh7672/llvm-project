@@ -237,7 +237,7 @@ SPEX64TargetLowering::LowerReturn(SDValue Chain, CallingConv::ID, bool,
     if (RetVal.getValueType() != MVT::i64)
       RetVal = DAG.getNode(ISD::ANY_EXTEND, DL, MVT::i64, RetVal);
     SDValue Glue;
-    Chain = DAG.getCopyToReg(Chain, DL, SPEX64::RX, RetVal, Glue);
+    Chain = DAG.getCopyToReg(Chain, DL, SPEX64::R0, RetVal, Glue);
     Glue = Chain.getValue(1);
     return DAG.getNode(SPEX64ISD::RET, DL, MVT::Other, Chain, Glue);
   }
@@ -405,7 +405,7 @@ SDValue SPEX64TargetLowering::lowerCallResult(
   if (Ins.size() > 1)
     report_fatal_error("SPEX64: multiple return values not supported");
 
-  SDValue Copy = DAG.getCopyFromReg(Chain, DL, SPEX64::RX, MVT::i64, InGlue);
+  SDValue Copy = DAG.getCopyFromReg(Chain, DL, SPEX64::R0, MVT::i64, InGlue);
   Chain = Copy.getValue(1);
   SDValue Val = Copy;
   if (Ins[0].VT != MVT::i64)
