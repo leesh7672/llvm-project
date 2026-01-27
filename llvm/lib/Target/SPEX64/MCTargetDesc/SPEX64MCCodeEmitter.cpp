@@ -120,9 +120,11 @@ void SPEX64MCCodeEmitter::encodeInstruction(const MCInst &MI,
       Imm64 = static_cast<uint64_t>(ImmOp->getImm());
       Imm32 = static_cast<uint32_t>(Imm64);
     } else if (ImmOp->isExpr()) {
-      MCFixupKind Kind = (Size == 8) ? (MCFixupKind)SPEX64::fixup_spex64_32
-                                     : (MCFixupKind)SPEX64::fixup_spex64_64;
-      Fixups.push_back(MCFixup::create(4, ImmOp->getExpr(), Kind));
+      if (Size == 8 || Size == 12) {
+        MCFixupKind Kind = (Size == 8) ? (MCFixupKind)SPEX64::fixup_spex64_32
+                                       : (MCFixupKind)SPEX64::fixup_spex64_64;
+        Fixups.push_back(MCFixup::create(4, ImmOp->getExpr(), Kind));
+      }
     }
   }
 
