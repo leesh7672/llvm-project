@@ -4,6 +4,7 @@
 // See https://llvm.org/LICENSE.txt for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
+#include "llvm/Support/Debug.h"
 //===----------------------------------------------------------------------===//
 
 #include "SPEX64InstrInfo.h"
@@ -299,7 +300,16 @@ bool SPEX64InstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
     }
     BuildMI(MBB, I, DL, get(SPEX64::MOVMOV32)).addReg(Src);
     BuildMI(MBB, I, DL, get(AluOpc)).addImm(Imm);
-    BuildMI(MBB, I, DL, get(SPEX64::MOVMOV32_R), Dst);
+    //
+    // NOTE:
+    // Some toolchain paths have been observed to emit an illegal W0 (e.g. 0x000000E8)
+    // at the point where we materialize RX -> GPR with MOVMOV32_R, producing <unknown>
+    // in the final disassembly. As a safe workaround (until the MOVMOV32_R encoding/
+    // lowering issue is fully root-caused), use the 64-bit RX->GPR move here.
+    //
+    // This preserves the low 32-bit result of the 32-bit ALU op in RX; consumers that
+    // use the value as i32 will still see the correct value.
+    BuildMI(MBB, I, DL, get(SPEX64::MOVMOV64_R), Dst);
     MI.eraseFromParent();
     return true;
   }
