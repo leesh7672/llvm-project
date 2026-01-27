@@ -40,6 +40,8 @@ public:
     switch (Fixup.getKind()) {
     case FK_Data_4:
     case FK_Data_8:
+    case (MCFixupKind)SPEX64::fixup_spex64_32:
+    case (MCFixupKind)SPEX64::fixup_spex64_64:
       return true;
     default:
       return false;
@@ -64,6 +66,8 @@ public:
     switch (Fixup.getKind()) {
     case FK_Data_4:
     case FK_Data_8:
+    case (MCFixupKind)SPEX64::fixup_spex64_32:
+    case (MCFixupKind)SPEX64::fixup_spex64_64:
       return true;
     default:
       return false;

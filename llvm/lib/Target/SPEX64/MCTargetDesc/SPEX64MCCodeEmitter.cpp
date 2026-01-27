@@ -80,7 +80,7 @@ void SPEX64MCCodeEmitter::encodeInstruction(const MCInst &MI,
 
   if (Size <= 4) {
     if (Expr)
-      Fixups.push_back(MCFixup::create(0, Expr, FK_Data_4));
+      Fixups.push_back(MCFixup::create(0, Expr, (MCFixupKind)SPEX64::fixup_spex64_32));
     support::endian::write(CB, W0, endianness::little);
     return;
   }
