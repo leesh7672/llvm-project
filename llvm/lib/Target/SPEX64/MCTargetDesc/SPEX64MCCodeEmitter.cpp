@@ -67,28 +67,11 @@ void SPEX64MCCodeEmitter::encodeInstruction(const MCInst &MI,
                                             SmallVectorImpl<MCFixup> &Fixups,
                                             const MCSubtargetInfo &STI) const {
   uint32_t W0 = static_cast<uint32_t>(getBinaryCodeForInstr(MI, Fixups, STI));
-
-  // Defensive: If we ever emit a SYS opcode (OPC12==0) with non-zero K9,
-  // the encoding is illegal per the ISA spec and usually indicates that a
-  // pseudo/unsupported MCInst reached the emitter or an encoding bug exists.
-  //
-  // This catches the observed 0x000000E0 case (OPC12=0, K9=0x0E0).
-  const uint32_t Opc12 = (W0 >> 20) & 0xFFFu;
-  const uint32_t K9 = (W0 & 0x1FFu);
-  if (Opc12 == 0 && K9 != 0) {
-    llvm::errs()
-        << "SPEX64MCCodeEmitter: illegal W0 encoding (OPC12=0, K9!=0)\n";
-    llvm::errs() << "  W0=0x" << llvm::format_hex(W0, 10) << "\n";
-    llvm::errs() << "  MCInst opcode=" << MI.getOpcode()
-                 << " operands=" << MI.getNumOperands() << "\n";
-    llvm::report_fatal_error(
-        "SPEX64MCCodeEmitter produced illegal W0; see dump above.");
-  }
-
   unsigned Size = 4;
   if (W0 & (1u << 16)) {
     Size = (W0 & (1u << 15)) ? 12 : 8;
   }
+
   const MCExpr *Expr = nullptr;
   for (unsigned I = 0, E = MI.getNumOperands(); I < E; ++I) {
     const MCOperand &Op = MI.getOperand(I);
@@ -98,10 +81,16 @@ void SPEX64MCCodeEmitter::encodeInstruction(const MCInst &MI,
     }
   }
 
+  if (Size <= 4 && Expr) {
+    llvm::errs() << "SPEX64MCCodeEmitter: Expr operand on 32-bit instruction\n";
+    llvm::errs() << "  W0=0x" << llvm::format_hex(W0, 10) << "\n";
+    llvm::errs() << "  MCInst opcode=" << MI.getOpcode()
+                 << " operands=" << MI.getNumOperands() << "\n";
+    llvm::report_fatal_error(
+        "SPEX64: relocation on W0-only instruction; fix encoding/patterns");
+  }
+
   if (Size <= 4) {
-    if (Expr)
-      Fixups.push_back(
-          MCFixup::create(0, Expr, (MCFixupKind)SPEX64::fixup_spex64_32));
     support::endian::write(CB, W0, endianness::little);
     return;
   }
@@ -133,7 +122,7 @@ void SPEX64MCCodeEmitter::encodeInstruction(const MCInst &MI,
     } else if (ImmOp->isExpr()) {
       MCFixupKind Kind = (Size == 8) ? (MCFixupKind)SPEX64::fixup_spex64_32
                                      : (MCFixupKind)SPEX64::fixup_spex64_64;
-      Fixups.push_back(MCFixup::create(4, ImmOp->getExpr(), Kind));
+      Fixups.push_back(MCFixup::create(Size - 4, ImmOp->getExpr(), Kind));
     }
   }
 
