@@ -18,6 +18,8 @@
 #include "llvm/MC/MCRegisterInfo.h"
 #include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/Support/EndianStream.h"
+#include "llvm/Support/ErrorHandling.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <cstdint>
 
@@ -65,6 +67,24 @@ void SPEX64MCCodeEmitter::encodeInstruction(const MCInst &MI,
                                             SmallVectorImpl<MCFixup> &Fixups,
                                             const MCSubtargetInfo &STI) const {
   uint32_t W0 = static_cast<uint32_t>(getBinaryCodeForInstr(MI, Fixups, STI));
+
+  // Defensive: If we ever emit a SYS opcode (OPC12==0) with non-zero K9,
+  // the encoding is illegal per the ISA spec and usually indicates that a
+  // pseudo/unsupported MCInst reached the emitter or an encoding bug exists.
+  //
+  // This catches the observed 0x000000E0 case (OPC12=0, K9=0x0E0).
+  const uint32_t Opc12 = (W0 >> 20) & 0xFFFu;
+  const uint32_t K9 = (W0 & 0x1FFu);
+  if (Opc12 == 0 && K9 != 0) {
+    llvm::errs()
+        << "SPEX64MCCodeEmitter: illegal W0 encoding (OPC12=0, K9!=0)\n";
+    llvm::errs() << "  W0=0x" << llvm::format_hex(W0, 10) << "\n";
+    llvm::errs() << "  MCInst opcode=" << MI.getOpcode()
+                 << " operands=" << MI.getNumOperands() << "\n";
+    llvm::report_fatal_error(
+        "SPEX64MCCodeEmitter produced illegal W0; see dump above.");
+  }
+
   unsigned Size = 4;
   if (W0 & (1u << 16)) {
     Size = (W0 & (1u << 15)) ? 12 : 8;
