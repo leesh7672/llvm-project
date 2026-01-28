@@ -18,7 +18,7 @@
 
 using namespace llvm;
 
-#define DEBUG_TYPE "spex64-isel"
+#define DEBUG_TYPE "spex-isel"
 #define PASS_NAME "SPEX DAG->DAG Pattern Instruction Selection"
 
 namespace {
@@ -60,14 +60,25 @@ bool SPEXDAGToDAGISel::SelectAddr(SDValue Addr, SDValue &Base,
                                     SDValue &Offset) {
   SDLoc DL(Addr);
 
+  // Materialize absolute constant addresses into a register.
+  // IMPORTANT: Use a *Target* constant so the rest of SelectionDAG/MI
+  // emission treats it as an immediate operand and not a value that needs
+  // additional legalization.
+  if (auto *CN = dyn_cast<ConstantSDNode>(Addr)) {
+    SDValue Imm = CurDAG->getTargetConstant(CN->getSExtValue(), DL, MVT::i64);
+    SDNode *Li = CurDAG->getMachineNode(SPEX::PSEUDO_LI64, DL, MVT::i64, Imm);
+    Base = SDValue(Li, 0);
+    Offset = CurDAG->getConstant(0, DL, MVT::i32);
+    return true;
+  }
+
   if (auto *FI = dyn_cast<FrameIndexSDNode>(Addr)) {
     Base = CurDAG->getTargetFrameIndex(FI->getIndex(), MVT::i64);
     Offset = CurDAG->getConstant(0, DL, MVT::i32);
     return true;
   }
 
-  if (isa<ConstantSDNode>(Addr) ||
-      Addr.getOpcode() == ISD::TargetGlobalAddress ||
+  if (Addr.getOpcode() == ISD::TargetGlobalAddress ||
       Addr.getOpcode() == ISD::TargetExternalSymbol) {
     SDNode *Li = CurDAG->getMachineNode(SPEX::LILI64_64, DL, MVT::i64, Addr);
     Base = SDValue(Li, 0);
@@ -285,9 +296,9 @@ void SPEXDAGToDAGISel::Select(SDNode *Node) {
       break;
     }
 
-    // Operand order for machine call nodes must begin with the Chain.
-    // The callee (direct symbol or indirect register) follows, then any
-    // additional operands such as the register mask and argument registers.
+    // Operand order for call machine nodes begins with the Chain.
+    // The callee follows, then any additional operands (e.g. regmask, arg
+    // registers), and finally optional glue.
     SmallVector<SDValue, 8> Ops;
     Ops.push_back(Chain);
     Ops.push_back(Callee);
@@ -301,13 +312,10 @@ void SPEXDAGToDAGISel::Select(SDNode *Node) {
       Ops.push_back(Op);
     }
 
-    Ops.push_back(Chain);
-
-    unsigned CallOpc = SPEX::PSEUDO_CALLR;
-    // Direct calls use the immediate form (CALL). Everything else is an
-    // indirect call through a value (which will be selected into a register),
-    // so must use the pseudo reg-call to avoid losing the target and encoding
-    // an all-zero immediate.
+    // Select the concrete call form.
+    // - Direct symbol/addr calls use the absolute-address immediate form.
+    // - Everything else is an indirect call through a register value.
+    unsigned CallOpc = SPEX::CALL64;
     if (Callee.getOpcode() == ISD::TargetGlobalAddress ||
         Callee.getOpcode() == ISD::TargetExternalSymbol ||
         Callee.getOpcode() == ISD::TargetConstantPool ||
