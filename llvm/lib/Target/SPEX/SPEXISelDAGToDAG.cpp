@@ -68,13 +68,13 @@ bool SPEXDAGToDAGISel::SelectAddr(SDValue Addr, SDValue &Base,
     SDValue Imm = CurDAG->getTargetConstant(CN->getSExtValue(), DL, MVT::i64);
     SDNode *Li = CurDAG->getMachineNode(SPEX::PSEUDO_LI64, DL, MVT::i64, Imm);
     Base = SDValue(Li, 0);
-    Offset = CurDAG->getConstant(0, DL, MVT::i32);
+    Offset = CurDAG->getTargetConstant(0, DL, MVT::i32);
     return true;
   }
 
   if (auto *FI = dyn_cast<FrameIndexSDNode>(Addr)) {
     Base = CurDAG->getTargetFrameIndex(FI->getIndex(), MVT::i64);
-    Offset = CurDAG->getConstant(0, DL, MVT::i32);
+    Offset = CurDAG->getTargetConstant(0, DL, MVT::i32);
     return true;
   }
 
@@ -82,7 +82,7 @@ bool SPEXDAGToDAGISel::SelectAddr(SDValue Addr, SDValue &Base,
       Addr.getOpcode() == ISD::TargetExternalSymbol) {
     SDNode *Li = CurDAG->getMachineNode(SPEX::PSEUDO_LI64, DL, MVT::i64, Addr);
     Base = SDValue(Li, 0);
-    Offset = CurDAG->getConstant(0, DL, MVT::i32);
+    Offset = CurDAG->getTargetConstant(0, DL, MVT::i32);
     return true;
   }
 
@@ -96,14 +96,14 @@ bool SPEXDAGToDAGISel::SelectAddr(SDValue Addr, SDValue &Base,
         Off = -Off;
       if (isInt<32>(Off)) {
         Base = LHS;
-        Offset = CurDAG->getConstant(Off, DL, MVT::i32);
+        Offset = CurDAG->getTargetConstant(Off, DL, MVT::i32);
         return true;
       }
     }
   }
 
   Base = Addr;
-  Offset = CurDAG->getConstant(0, DL, MVT::i32);
+  Offset = CurDAG->getTargetConstant(0, DL, MVT::i32);
   return true;
 }
 
