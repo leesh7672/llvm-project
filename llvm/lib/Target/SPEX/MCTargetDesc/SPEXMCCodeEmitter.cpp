@@ -136,19 +136,13 @@ void SPEXMCCodeEmitter::encodeInstruction(const MCInst &MI,
       Imm32 = static_cast<uint32_t>(Imm64);
     } else if (ImmOp->isExpr()) {
       // For symbolic immediates, always emit a relocation so the linker can
-      // resolve it (e.g. `call rmain` in a .o).
+      // resolve it (e.g. `call rmain`, `jmp .Lbb`, `bcc-eq label`).
       //
-      // Branch instructions already attach their own fixup via
-      // getBranchTargetOpValue(). Avoid emitting a duplicate fixup here.
-      const MCInstrDesc &Desc = MCII.get(MI.getOpcode());
-      const bool IsBranchImm =
-          Desc.isBranch() && ((Desc.TSFlags & SPEXII_I1) != 0);
-      if (!IsBranchImm) {
-        // Use the generic data fixup kinds so we don't depend on custom fixup
-        // handling for basic absolute addresses.
-        MCFixupKind Kind = I64 ? FK_Data_8 : FK_Data_4;
-        Fixups.push_back(MCFixup::create(/*Offset=*/4, ImmOp->getExpr(), Kind));
-      }
+      // IMPORTANT: In SPEX, opcode is independent of operand size; the actual
+      // extension size is determined by the encoding bits (I1/I64) in W0.
+      // Therefore, choose 32- vs 64-bit relocation based on W0's I64 bit.
+      MCFixupKind Kind = I64 ? FK_Data_8 : FK_Data_4;
+      Fixups.push_back(MCFixup::create(/*Offset=*/4, ImmOp->getExpr(), Kind));
     }
   }
 
@@ -171,14 +165,8 @@ SPEXMCCodeEmitter::getBranchTargetOpValue(const MCInst &MI, const MCOperand &MO,
     return static_cast<unsigned>(MO.getImm());
 
   if (MO.isExpr()) {
-    // Absolute address stored in the extension word(s) at byte offset +4.
-    // Use 32- vs 64-bit fixup depending on the instruction encoding bit.
-    const MCInstrDesc &Desc = MCII.get(MI.getOpcode());
-    const bool Is64 = (Desc.TSFlags & SPEXII_I64) != 0;
-    MCFixupKind Kind =
-        Is64 ? (MCFixupKind)SPEX::fixup_spex64_64
-             : (MCFixupKind)SPEX::fixup_spex64_32;
-    Fixups.push_back(MCFixup::create(4, MO.getExpr(), Kind));
+    // The actual relocation/fixup is emitted by encodeInstruction() based on
+    // the encoding bits (I1/I64) in W0. Here we just provide a placeholder.
     return 0;
   }
 
