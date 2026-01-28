@@ -60,7 +60,7 @@ def SPEXImm64 : Operand<i64> {
 
 def brtarget : Operand<OtherVT> {
   let ParserMatchClass = SPEXImm64AsmOperand;
-  let EncoderMethod = "getMachineOpValue";
+  let EncoderMethod = "getBranchTargetOpValue";
   let DecoderMethod = "DecodeSPEXImmVar";
 }
 

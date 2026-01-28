@@ -37,6 +37,9 @@ class SPEXMCCodeEmitter : public MCCodeEmitter {
   unsigned getMachineOpValue(const MCInst &MI, const MCOperand &MO,
                              SmallVectorImpl<MCFixup> &Fixups,
                              const MCSubtargetInfo &STI) const;
+  unsigned getBranchTargetOpValue(const MCInst &MI, const MCOperand &MO,
+                                  SmallVectorImpl<MCFixup> &Fixups,
+                                  const MCSubtargetInfo &STI) const;
 
 public:
   SPEXMCCodeEmitter(MCContext &Ctx, const MCInstrInfo &) : Ctx(Ctx) {}
@@ -130,7 +133,15 @@ void SPEXMCCodeEmitter::encodeInstruction(const MCInst &MI,
     } else if (ImmOp->isExpr()) {
       MCFixupKind Kind = (!I64) ? (MCFixupKind)SPEX::fixup_spex64_32
                                 : (MCFixupKind)SPEX::fixup_spex64_64;
-      Fixups.push_back(MCFixup::create(/*Offset=*/4, ImmOp->getExpr(), Kind));
+      bool AlreadyHasFixup = false;
+      for (const auto &F : Fixups) {
+        if (F.getOffset() == 4 && F.getValue() == ImmOp->getExpr()) {
+          AlreadyHasFixup = true;
+          break;
+        }
+      }
+      if (!AlreadyHasFixup)
+        Fixups.push_back(MCFixup::create(/*Offset=*/4, ImmOp->getExpr(), Kind));
     }
   }
 
@@ -141,6 +152,27 @@ void SPEXMCCodeEmitter::encodeInstruction(const MCInst &MI,
     support::endian::write(CB, Imm32, endianness::little);
   }
 }
+
+unsigned
+SPEXMCCodeEmitter::getBranchTargetOpValue(const MCInst &MI, const MCOperand &MO,
+                                         SmallVectorImpl<MCFixup> &Fixups,
+                                         const MCSubtargetInfo &STI) const {
+  (void)MI;
+  (void)STI;
+
+  if (MO.isImm())
+    return static_cast<unsigned>(MO.getImm());
+
+  if (MO.isExpr()) {
+    // Absolute address stored in the extension word(s) at byte offset +4.
+    Fixups.push_back(MCFixup::create(4, MO.getExpr(),
+                                     (MCFixupKind)SPEX::fixup_spex64_64));
+    return 0;
+  }
+
+  llvm_unreachable("Unexpected operand kind in branch target");
+}
+
 
 } // namespace
 
