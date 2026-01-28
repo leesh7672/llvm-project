@@ -156,9 +156,22 @@ class SPEX64AsmParser : public MCTargetAsmParser {
     if (getLexer().is(AsmToken::Hash) || getLexer().is(AsmToken::At))
       getLexer().Lex();
 
+    // Remember a bare identifier token (e.g. `call rmain`). If the expression
+    // parser later folds it into a constant, we'd lose the symbol reference and
+    // end up encoding an immediate zero with no relocation.
+    StringRef SymName;
+    if (getLexer().is(AsmToken::Identifier))
+      SymName = getLexer().getTok().getIdentifier();
+
     const MCExpr *Expr = nullptr;
     if (Parser.parseExpression(Expr))
       return Error(StartLoc, "invalid immediate");
+
+    if (!SymName.empty() && isa<MCConstantExpr>(Expr)) {
+      // Re-materialize as a symbol reference so the MC layer can emit a fixup.
+      MCSymbol *Sym = Parser.getContext().getOrCreateSymbol(SymName);
+      Expr = MCSymbolRefExpr::create(Sym, Parser.getContext());
+    }
 
     SMLoc EndLoc = getLexer().getLoc();
     Operands.push_back(SPEX64Operand::createImm(Expr, StartLoc, EndLoc));

@@ -9,6 +9,7 @@
 #include "SPEX64FixupKinds.h"
 #include "SPEX64MCTargetDesc.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/Twine.h"
 #include "llvm/MC/MCCodeEmitter.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCExpr.h"
@@ -94,19 +95,23 @@ void SPEX64MCCodeEmitter::encodeInstruction(const MCInst &MI,
     }
   }
 
+  // Instructions with I1=1 *must* carry an immediate/expr operand. If we reach
+  // here without one, we'd silently encode a zero immediate, which later looks
+  // like 'call 0' and produces no relocation.
+  if (!ImmOp) {
+    report_fatal_error("SPEX64: missing immediate operand for I1 instruction (opcode=" +
+                       Twine(MI.getOpcode()) + ")");
+  }
+
   uint32_t Imm32 = 0;
   uint64_t Imm64 = 0;
-  if (ImmOp) {
-    if (ImmOp->isImm()) {
-      Imm64 = static_cast<uint64_t>(ImmOp->getImm());
-      Imm32 = static_cast<uint32_t>(Imm64);
-    } else if (ImmOp->isExpr()) {
-      if (I1) {
-        MCFixupKind Kind = (!I64) ? (MCFixupKind)SPEX64::fixup_spex64_32
-                                  : (MCFixupKind)SPEX64::fixup_spex64_64;
-        Fixups.push_back(MCFixup::create(4, ImmOp->getExpr(), Kind));
-      }
-    }
+  if (ImmOp->isImm()) {
+    Imm64 = static_cast<uint64_t>(ImmOp->getImm());
+    Imm32 = static_cast<uint32_t>(Imm64);
+  } else if (ImmOp->isExpr()) {
+    MCFixupKind Kind = (!I64) ? (MCFixupKind)SPEX64::fixup_spex64_32
+                              : (MCFixupKind)SPEX64::fixup_spex64_64;
+    Fixups.push_back(MCFixup::create(/*Offset=*/4, ImmOp->getExpr(), Kind));
   }
 
   support::endian::write(CB, W0, endianness::little);
