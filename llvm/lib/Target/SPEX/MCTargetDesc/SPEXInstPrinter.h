@@ -16,7 +16,7 @@ namespace llvm {
 class SPEXInstPrinter : public MCInstPrinter {
 public:
   SPEXInstPrinter(const MCAsmInfo &MAI, const MCInstrInfo &MII,
-                    const MCRegisterInfo &MRI)
+                  const MCRegisterInfo &MRI)
       : MCInstPrinter(MAI, MII, MRI) {}
 
   void printInst(const MCInst *MI, uint64_t Address, StringRef Annot,

@@ -37,7 +37,7 @@ class SPEXTargetLowering : public TargetLowering {
 
 public:
   explicit SPEXTargetLowering(const SPEXTargetMachine &TM,
-                                const SPEXSubtarget &ST);
+                              const SPEXSubtarget &ST);
 
   SDValue LowerOperation(SDValue Op, SelectionDAG &DAG) const override;
 

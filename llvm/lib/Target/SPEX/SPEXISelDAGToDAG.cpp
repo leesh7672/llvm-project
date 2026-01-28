@@ -57,7 +57,7 @@ INITIALIZE_PASS(SPEXDAGToDAGISelLegacy, DEBUG_TYPE, PASS_NAME, false, false)
 #include "SPEXGenDAGISel.inc"
 
 bool SPEXDAGToDAGISel::SelectAddr(SDValue Addr, SDValue &Base,
-                                    SDValue &Offset) {
+                                  SDValue &Offset) {
   SDLoc DL(Addr);
 
   // Materialize absolute constant addresses into a register.
@@ -108,7 +108,7 @@ bool SPEXDAGToDAGISel::SelectAddr(SDValue Addr, SDValue &Base,
 }
 
 bool SPEXDAGToDAGISel::SelectAddrRR(SDValue Addr, SDValue &Base,
-                                      SDValue &Index) {
+                                    SDValue &Index) {
   if (Addr.getOpcode() == ISD::ADD || Addr.getOpcode() == ISD::SUB) {
     SDValue LHS = Addr.getOperand(0);
     SDValue RHS = Addr.getOperand(1);
@@ -198,8 +198,7 @@ void SPEXDAGToDAGISel::Select(SDNode *Node) {
     default:
       break;
     }
-    SDNode *Res =
-        CurDAG->getMachineNode(SPEX::PSEUDO_LI64, DL, MVT::i64, Addr);
+    SDNode *Res = CurDAG->getMachineNode(SPEX::PSEUDO_LI64, DL, MVT::i64, Addr);
     ReplaceNode(Node, Res);
     return;
   }
@@ -445,8 +444,7 @@ void SPEXDAGToDAGISel::Select(SDNode *Node) {
     SDValue Imm = CurDAG->getTargetConstant(ShAmt, DL, MVT::i32);
 
     unsigned MovToRX = (OutBits == 32) ? SPEX::MOVMOV32 : SPEX::MOVMOV64;
-    unsigned MovFromRX =
-        (OutBits == 32) ? SPEX::MOVMOV32_R : SPEX::MOVMOV64_R;
+    unsigned MovFromRX = (OutBits == 32) ? SPEX::MOVMOV32_R : SPEX::MOVMOV64_R;
     unsigned ShlOpc = (OutBits == 32) ? SPEX::SHL32 : SPEX::SHL64;
     unsigned SraOpc = (OutBits == 32) ? SPEX::SAR32 : SPEX::SAR64;
 

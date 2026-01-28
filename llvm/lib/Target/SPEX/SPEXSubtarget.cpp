@@ -15,9 +15,9 @@ using namespace llvm;
 #include "SPEXGenSubtargetInfo.inc"
 
 SPEXSubtarget::SPEXSubtarget(const Triple &TT, StringRef CPU, StringRef FS,
-                                 SPEXTargetMachine &TM)
-    : SPEXGenSubtargetInfo(TT, CPU, CPU, FS), InstrInfo(*this),
-      FrameLowering(), TLInfo(TM, *this) {
+                             SPEXTargetMachine &TM)
+    : SPEXGenSubtargetInfo(TT, CPU, CPU, FS), InstrInfo(*this), FrameLowering(),
+      TLInfo(TM, *this) {
   ParseSubtargetFeatures(CPU, CPU, FS);
 }
 

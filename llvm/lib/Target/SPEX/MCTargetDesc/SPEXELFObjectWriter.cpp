@@ -46,8 +46,8 @@ createSPEXELFObjectTargetWriter(uint8_t OSABI) {
   return std::make_unique<SPEXELFObjectWriter>(OSABI);
 }
 
-std::unique_ptr<MCObjectWriter>
-createSPEXELFObjectWriter(raw_pwrite_stream &OS, uint8_t OSABI) {
+std::unique_ptr<MCObjectWriter> createSPEXELFObjectWriter(raw_pwrite_stream &OS,
+                                                          uint8_t OSABI) {
   auto MOTW = std::make_unique<SPEXELFObjectWriter>(OSABI);
   return std::make_unique<ELFObjectWriter>(std::move(MOTW), OS,
                                            /*IsLittleEndian=*/true);

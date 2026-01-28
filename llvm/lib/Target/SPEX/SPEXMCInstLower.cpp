@@ -44,8 +44,7 @@ SPEXMCInstLower::getBlockAddressSymbol(const MachineOperand &MO) const {
   return Printer.GetBlockAddressSymbol(MO.getBlockAddress());
 }
 
-MCSymbol *
-SPEXMCInstLower::getJumpTableSymbol(const MachineOperand &MO) const {
+MCSymbol *SPEXMCInstLower::getJumpTableSymbol(const MachineOperand &MO) const {
   if (MO.getTargetFlags() != 0)
     report_fatal_error("SPEX: unsupported target flags on jumptable");
   const DataLayout &DL = Printer.getDataLayout();
@@ -69,7 +68,7 @@ SPEXMCInstLower::getConstantPoolSymbol(const MachineOperand &MO) const {
 }
 
 MCOperand SPEXMCInstLower::lowerSymbolOperand(const MachineOperand &MO,
-                                                MCSymbol *Sym) const {
+                                              MCSymbol *Sym) const {
   const MCExpr *Expr = MCSymbolRefExpr::create(Sym, Ctx);
   if (!MO.isJTI() && MO.getOffset())
     Expr = MCBinaryExpr::createAdd(

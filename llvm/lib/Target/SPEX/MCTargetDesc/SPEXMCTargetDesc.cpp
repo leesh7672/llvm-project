@@ -22,7 +22,7 @@ using namespace llvm;
 
 namespace llvm {
 MCAsmInfo *createSPEXMCAsmInfo(const MCRegisterInfo &, const Triple &,
-                                 const MCTargetOptions &);
+                               const MCTargetOptions &);
 } // namespace llvm
 
 #define GET_INSTRINFO_MC_DESC
@@ -47,16 +47,15 @@ MCRegisterInfo *createSPEXMCRegisterInfo(const Triple &TT) {
 }
 
 MCSubtargetInfo *createSPEXMCSubtargetInfo(const Triple &TT, StringRef CPU,
-                                             StringRef FS) {
+                                           StringRef FS) {
   return createSPEXMCSubtargetInfoImpl(TT, CPU, CPU, FS);
 }
 
 namespace llvm {
-MCInstPrinter *createSPEXMCInstPrinter(const Triple &T,
-                                         unsigned SyntaxVariant,
-                                         const MCAsmInfo &MAI,
-                                         const MCInstrInfo &MII,
-                                         const MCRegisterInfo &MRI) {
+MCInstPrinter *createSPEXMCInstPrinter(const Triple &T, unsigned SyntaxVariant,
+                                       const MCAsmInfo &MAI,
+                                       const MCInstrInfo &MII,
+                                       const MCRegisterInfo &MRI) {
   return new SPEXInstPrinter(MAI, MII, MRI);
 }
 } // namespace llvm

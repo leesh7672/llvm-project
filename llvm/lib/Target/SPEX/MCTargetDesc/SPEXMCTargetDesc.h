@@ -28,19 +28,16 @@ class Target;
 class Triple;
 class raw_pwrite_stream;
 
-MCCodeEmitter *createSPEXMCCodeEmitter(const MCInstrInfo &MCII,
-                                         MCContext &Ctx);
-MCInstPrinter *createSPEXMCInstPrinter(const Triple &T,
-                                         unsigned SyntaxVariant,
-                                         const MCAsmInfo &MAI,
-                                         const MCInstrInfo &MII,
-                                         const MCRegisterInfo &MRI);
-MCAsmBackend *createSPEXAsmBackend(const Target &T,
-                                     const MCSubtargetInfo &STI,
-                                     const MCRegisterInfo &MRI,
-                                     const MCTargetOptions &Options);
-std::unique_ptr<MCObjectWriter>
-createSPEXELFObjectWriter(raw_pwrite_stream &OS, uint8_t OSABI);
+MCCodeEmitter *createSPEXMCCodeEmitter(const MCInstrInfo &MCII, MCContext &Ctx);
+MCInstPrinter *createSPEXMCInstPrinter(const Triple &T, unsigned SyntaxVariant,
+                                       const MCAsmInfo &MAI,
+                                       const MCInstrInfo &MII,
+                                       const MCRegisterInfo &MRI);
+MCAsmBackend *createSPEXAsmBackend(const Target &T, const MCSubtargetInfo &STI,
+                                   const MCRegisterInfo &MRI,
+                                   const MCTargetOptions &Options);
+std::unique_ptr<MCObjectWriter> createSPEXELFObjectWriter(raw_pwrite_stream &OS,
+                                                          uint8_t OSABI);
 std::unique_ptr<MCObjectTargetWriter>
 createSPEXELFObjectTargetWriter(uint8_t OSABI);
 } // namespace llvm

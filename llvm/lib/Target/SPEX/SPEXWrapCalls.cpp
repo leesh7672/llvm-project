@@ -58,10 +58,10 @@ public:
 
         // Prefer opcode checks because some calls may be pseudos pre-expansion.
         const unsigned Opc = MI.getOpcode();
-        const bool IsSPEXCall =
-            MI.isCall() || Opc == SPEX::PSEUDO_CALL ||
-            Opc == SPEX::PSEUDO_CALLR || Opc == SPEX::CALL ||
-            Opc == SPEX::CALL32 || Opc == SPEX::CALL64;
+        const bool IsSPEXCall = MI.isCall() || Opc == SPEX::PSEUDO_CALL ||
+                                Opc == SPEX::PSEUDO_CALLR ||
+                                Opc == SPEX::CALL || Opc == SPEX::CALL32 ||
+                                Opc == SPEX::CALL64;
 
         if (!IsSPEXCall)
           continue;

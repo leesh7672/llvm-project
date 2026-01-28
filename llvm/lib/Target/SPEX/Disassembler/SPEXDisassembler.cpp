@@ -42,19 +42,16 @@ public:
 };
 
 static const MCRegister GPRDecoderTable[] = {
-    SPEX::R0,  SPEX::R1,  SPEX::R2,  SPEX::R3,  SPEX::R4,
-    SPEX::R5,  SPEX::R6,  SPEX::R7,  SPEX::R8,  SPEX::R9,
-    SPEX::R10, SPEX::R11, SPEX::R12, SPEX::R13, SPEX::R14,
-    SPEX::R15, SPEX::R16, SPEX::R17, SPEX::R18, SPEX::R19,
-    SPEX::R20, SPEX::R21, SPEX::R22, SPEX::R23, SPEX::R24,
-    SPEX::R25, SPEX::R26, SPEX::R27, SPEX::R28, SPEX::R29,
-    SPEX::R30, SPEX::R31, SPEX::R32, SPEX::R33, SPEX::R34,
-    SPEX::R35, SPEX::R36, SPEX::R37, SPEX::R38, SPEX::R39,
-    SPEX::R40, SPEX::R41, SPEX::R42, SPEX::R43, SPEX::R44,
-    SPEX::R45, SPEX::R46, SPEX::R47, SPEX::R48, SPEX::R49,
-    SPEX::R50, SPEX::R51, SPEX::R52, SPEX::R53, SPEX::R54,
-    SPEX::R55, SPEX::R56, SPEX::R57, SPEX::R58, SPEX::R59,
-    SPEX::R60, SPEX::R61, SPEX::R62, SPEX::R63,
+    SPEX::R0,  SPEX::R1,  SPEX::R2,  SPEX::R3,  SPEX::R4,  SPEX::R5,  SPEX::R6,
+    SPEX::R7,  SPEX::R8,  SPEX::R9,  SPEX::R10, SPEX::R11, SPEX::R12, SPEX::R13,
+    SPEX::R14, SPEX::R15, SPEX::R16, SPEX::R17, SPEX::R18, SPEX::R19, SPEX::R20,
+    SPEX::R21, SPEX::R22, SPEX::R23, SPEX::R24, SPEX::R25, SPEX::R26, SPEX::R27,
+    SPEX::R28, SPEX::R29, SPEX::R30, SPEX::R31, SPEX::R32, SPEX::R33, SPEX::R34,
+    SPEX::R35, SPEX::R36, SPEX::R37, SPEX::R38, SPEX::R39, SPEX::R40, SPEX::R41,
+    SPEX::R42, SPEX::R43, SPEX::R44, SPEX::R45, SPEX::R46, SPEX::R47, SPEX::R48,
+    SPEX::R49, SPEX::R50, SPEX::R51, SPEX::R52, SPEX::R53, SPEX::R54, SPEX::R55,
+    SPEX::R56, SPEX::R57, SPEX::R58, SPEX::R59, SPEX::R60, SPEX::R61, SPEX::R62,
+    SPEX::R63,
 };
 
 DecodeStatus DecodeGPRRegisterClass(MCInst &Inst, unsigned RegNo,
@@ -67,7 +64,7 @@ DecodeStatus DecodeGPRRegisterClass(MCInst &Inst, unsigned RegNo,
 }
 
 DecodeStatus DecodeSPEXImm9(MCInst &Inst, unsigned Imm, uint64_t /*Address*/,
-                              const MCDisassembler * /*Decoder*/) {
+                            const MCDisassembler * /*Decoder*/) {
   Inst.addOperand(MCOperand::createImm(Imm & 0x1FFu));
   return MCDisassembler::Success;
 }
@@ -95,14 +92,14 @@ static DecodeStatus decodeImmediate64(MCInst &Inst,
 }
 
 DecodeStatus DecodeSPEXImm32(MCInst &Inst, unsigned /*Imm*/,
-                               uint64_t /*Address*/,
-                               const MCDisassembler *Decoder) {
+                             uint64_t /*Address*/,
+                             const MCDisassembler *Decoder) {
   return decodeImmediate32(Inst, Decoder);
 }
 
 DecodeStatus DecodeSPEXImm64(MCInst &Inst, unsigned /*Imm*/,
-                               uint64_t /*Address*/,
-                               const MCDisassembler *Decoder) {
+                             uint64_t /*Address*/,
+                             const MCDisassembler *Decoder) {
   return decodeImmediate64(Inst, Decoder);
 }
 
@@ -136,18 +133,17 @@ static DecodeStatus decodeImmediateVar(MCInst &Inst, uint64_t /*Address*/,
   return MCDisassembler::Success;
 }
 
-DecodeStatus DecodeSPEXImmVar(MCInst &Inst, unsigned /*Imm*/,
-                                uint64_t Address,
-                                const MCDisassembler *Decoder) {
+DecodeStatus DecodeSPEXImmVar(MCInst &Inst, unsigned /*Imm*/, uint64_t Address,
+                              const MCDisassembler *Decoder) {
   return decodeImmediateVar(Inst, Address, Decoder);
 }
 
 #include "SPEXGenDisassemblerTables.inc"
 
 DecodeStatus SPEXDisassembler::getInstruction(MCInst &Instr, uint64_t &Size,
-                                                ArrayRef<uint8_t> Bytes,
-                                                uint64_t Address,
-                                                raw_ostream &CStream) const {
+                                              ArrayRef<uint8_t> Bytes,
+                                              uint64_t Address,
+                                              raw_ostream &CStream) const {
   if (Bytes.size() < 4) {
     Size = 0;
     return MCDisassembler::Fail;
@@ -178,8 +174,8 @@ DecodeStatus SPEXDisassembler::getInstruction(MCInst &Instr, uint64_t &Size,
 } // end anonymous namespace
 
 static MCDisassembler *createSPEXDisassembler(const Target & /*T*/,
-                                                const MCSubtargetInfo &STI,
-                                                MCContext &Ctx) {
+                                              const MCSubtargetInfo &STI,
+                                              MCContext &Ctx) {
   return new SPEXDisassembler(STI, Ctx);
 }
 

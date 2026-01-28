@@ -49,8 +49,8 @@ public:
 
 unsigned
 SPEXMCCodeEmitter::getMachineOpValue(const MCInst &MI, const MCOperand &MO,
-                                       SmallVectorImpl<MCFixup> &Fixups,
-                                       const MCSubtargetInfo &STI) const {
+                                     SmallVectorImpl<MCFixup> &Fixups,
+                                     const MCSubtargetInfo &STI) const {
   (void)MI;
   (void)Fixups;
   (void)STI;
@@ -64,9 +64,9 @@ SPEXMCCodeEmitter::getMachineOpValue(const MCInst &MI, const MCOperand &MO,
 }
 
 void SPEXMCCodeEmitter::encodeInstruction(const MCInst &MI,
-                                            SmallVectorImpl<char> &CB,
-                                            SmallVectorImpl<MCFixup> &Fixups,
-                                            const MCSubtargetInfo &STI) const {
+                                          SmallVectorImpl<char> &CB,
+                                          SmallVectorImpl<MCFixup> &Fixups,
+                                          const MCSubtargetInfo &STI) const {
   uint32_t W0 = static_cast<uint32_t>(getBinaryCodeForInstr(MI, Fixups, STI));
 
   bool I1 = (W0 >> 16) & 1;
@@ -125,8 +125,8 @@ void SPEXMCCodeEmitter::encodeInstruction(const MCInst &MI,
   uint64_t Imm64 = 0;
   if (ImmOp) {
     if (ImmOp->isImm()) {
-    Imm64 = static_cast<uint64_t>(ImmOp->getImm());
-    Imm32 = static_cast<uint32_t>(Imm64);
+      Imm64 = static_cast<uint64_t>(ImmOp->getImm());
+      Imm32 = static_cast<uint32_t>(Imm64);
     } else if (ImmOp->isExpr()) {
       MCFixupKind Kind = (!I64) ? (MCFixupKind)SPEX::fixup_spex64_32
                                 : (MCFixupKind)SPEX::fixup_spex64_64;
@@ -145,7 +145,7 @@ void SPEXMCCodeEmitter::encodeInstruction(const MCInst &MI,
 } // namespace
 
 MCCodeEmitter *createSPEXMCCodeEmitter(const MCInstrInfo &MCII,
-                                         MCContext &Ctx) {
+                                       MCContext &Ctx) {
   return new SPEXMCCodeEmitter(Ctx, MCII);
 }
 

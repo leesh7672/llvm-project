@@ -26,15 +26,15 @@ void SPEXInstPrinter::printRegName(raw_ostream &O, MCRegister Reg) {
 }
 
 void SPEXInstPrinter::printInst(const MCInst *MI, uint64_t Address,
-                                  StringRef Annot, const MCSubtargetInfo &STI,
-                                  raw_ostream &O) {
+                                StringRef Annot, const MCSubtargetInfo &STI,
+                                raw_ostream &O) {
   if (!printAliasInstr(MI, Address, O))
     printInstruction(MI, Address, O);
   printAnnotation(O, Annot);
 }
 
 void SPEXInstPrinter::printOperand(const MCInst *MI, unsigned OpNo,
-                                     raw_ostream &O) {
+                                   raw_ostream &O) {
   const MCOperand &Op = MI->getOperand(OpNo);
   if (Op.isReg()) {
     O << getRegisterName(Op.getReg());

@@ -24,10 +24,10 @@ SPEXInstrInfo::SPEXInstrInfo(const TargetSubtargetInfo &STI)
     : SPEXGenInstrInfo(STI, RI) {}
 
 void SPEXInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
-                                  MachineBasicBlock::iterator MI,
-                                  const DebugLoc &DL, Register DestReg,
-                                  Register SrcReg, bool KillSrc,
-                                  bool RenamableDest, bool RenamableSrc) const {
+                                MachineBasicBlock::iterator MI,
+                                const DebugLoc &DL, Register DestReg,
+                                Register SrcReg, bool KillSrc,
+                                bool RenamableDest, bool RenamableSrc) const {
   if (SPEX::GPRRegClass.contains(DestReg, SrcReg)) {
     BuildMI(MBB, MI, DL, get(SPEX::MOVMOV64))
         .addReg(SrcReg,
@@ -103,11 +103,11 @@ void SPEXInstrInfo::storeRegToStackSlot(
 }
 
 void SPEXInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
-                                           MachineBasicBlock::iterator MI,
-                                           Register DestReg, int FrameIndex,
-                                           const TargetRegisterClass *RC,
-                                           Register VReg, unsigned SubReg,
-                                           MachineInstr::MIFlag Flags) const {
+                                         MachineBasicBlock::iterator MI,
+                                         Register DestReg, int FrameIndex,
+                                         const TargetRegisterClass *RC,
+                                         Register VReg, unsigned SubReg,
+                                         MachineInstr::MIFlag Flags) const {
   (void)TRI;
   DebugLoc DL = MI != MBB.end() ? MI->getDebugLoc() : DebugLoc();
   if (RC != &SPEX::GPRRegClass)
@@ -151,42 +151,42 @@ bool SPEXInstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
     return true;
   }
 
-// Safety net: LI* only accepts an Imm/Expr operand. If something upstream
-// accidentally feeds a register into LI*, rewrite it into MOV* (rx <- r6).
-case SPEX::LILI8_32:
-case SPEX::LILI8_64:
-case SPEX::LILI16_32:
-case SPEX::LILI16_64:
-case SPEX::LILI32_32:
-case SPEX::LILI32_64:
-case SPEX::LILI64_32:
-case SPEX::LILI64_64: {
-  if (MI.getNumOperands() >= 1 && MI.getOperand(0).isReg()) {
-    Register Src = MI.getOperand(0).getReg();
-    unsigned MovOpc = SPEX::MOVMOV64;
-    switch (MI.getOpcode()) {
-    case SPEX::LILI8_32:
-    case SPEX::LILI8_64:
-      MovOpc = SPEX::MOVMOV8;
-      break;
-    case SPEX::LILI16_32:
-    case SPEX::LILI16_64:
-      MovOpc = SPEX::MOVMOV16;
-      break;
-    case SPEX::LILI32_32:
-    case SPEX::LILI32_64:
-      MovOpc = SPEX::MOVMOV32;
-      break;
-    default:
-      MovOpc = SPEX::MOVMOV64;
-      break;
+  // Safety net: LI* only accepts an Imm/Expr operand. If something upstream
+  // accidentally feeds a register into LI*, rewrite it into MOV* (rx <- r6).
+  case SPEX::LILI8_32:
+  case SPEX::LILI8_64:
+  case SPEX::LILI16_32:
+  case SPEX::LILI16_64:
+  case SPEX::LILI32_32:
+  case SPEX::LILI32_64:
+  case SPEX::LILI64_32:
+  case SPEX::LILI64_64: {
+    if (MI.getNumOperands() >= 1 && MI.getOperand(0).isReg()) {
+      Register Src = MI.getOperand(0).getReg();
+      unsigned MovOpc = SPEX::MOVMOV64;
+      switch (MI.getOpcode()) {
+      case SPEX::LILI8_32:
+      case SPEX::LILI8_64:
+        MovOpc = SPEX::MOVMOV8;
+        break;
+      case SPEX::LILI16_32:
+      case SPEX::LILI16_64:
+        MovOpc = SPEX::MOVMOV16;
+        break;
+      case SPEX::LILI32_32:
+      case SPEX::LILI32_64:
+        MovOpc = SPEX::MOVMOV32;
+        break;
+      default:
+        MovOpc = SPEX::MOVMOV64;
+        break;
+      }
+      BuildMI(MBB, I, DL, get(MovOpc)).addReg(Src);
+      MI.eraseFromParent();
+      return true;
     }
-    BuildMI(MBB, I, DL, get(MovOpc)).addReg(Src);
-    MI.eraseFromParent();
-    return true;
+    break;
   }
-  break;
-}
 
   case SPEX::PSEUDO_LI8: {
     Register Dst = MI.getOperand(0).getReg();

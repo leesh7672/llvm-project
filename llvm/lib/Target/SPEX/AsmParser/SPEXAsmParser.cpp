@@ -110,14 +110,14 @@ public:
   }
 
   static std::unique_ptr<SPEXOperand> createReg(unsigned Reg, SMLoc StartLoc,
-                                                  SMLoc EndLoc) {
+                                                SMLoc EndLoc) {
     auto Op = std::make_unique<SPEXOperand>(k_Reg, StartLoc, EndLoc);
     Op->Reg = Reg;
     return Op;
   }
 
-  static std::unique_ptr<SPEXOperand>
-  createImm(const MCExpr *Imm, SMLoc StartLoc, SMLoc EndLoc) {
+  static std::unique_ptr<SPEXOperand> createImm(const MCExpr *Imm,
+                                                SMLoc StartLoc, SMLoc EndLoc) {
     auto Op = std::make_unique<SPEXOperand>(k_Imm, StartLoc, EndLoc);
     Op->Imm = Imm;
     return Op;
@@ -350,7 +350,7 @@ class SPEXAsmParser : public MCTargetAsmParser {
 
 public:
   SPEXAsmParser(const MCSubtargetInfo &STI, MCAsmParser &Parser,
-                  const MCInstrInfo &MII, const MCTargetOptions &Options)
+                const MCInstrInfo &MII, const MCTargetOptions &Options)
       : MCTargetAsmParser(Options, STI, MII), Parser(Parser) {
     setAvailableFeatures(STI.getFeatureBits());
   }

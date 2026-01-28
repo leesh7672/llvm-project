@@ -137,10 +137,9 @@ public:
 };
 } // namespace
 
-MCAsmBackend *createSPEXAsmBackend(const Target &T,
-                                     const MCSubtargetInfo &STI,
-                                     const MCRegisterInfo &,
-                                     const MCTargetOptions &) {
+MCAsmBackend *createSPEXAsmBackend(const Target &T, const MCSubtargetInfo &STI,
+                                   const MCRegisterInfo &,
+                                   const MCTargetOptions &) {
   return new SPEXAsmBackend(STI);
 }
 } // namespace llvm

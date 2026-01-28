@@ -35,7 +35,7 @@ bool SPEXFrameLowering::hasFPImpl(const MachineFunction &MF) const {
 }
 
 void SPEXFrameLowering::emitPrologue(MachineFunction &MF,
-                                       MachineBasicBlock &MBB) const {
+                                     MachineBasicBlock &MBB) const {
   // No-op for now.
   // Later: adjust SP, spill callee-saved regs, set FP, etc.
   (void)MF;
@@ -43,15 +43,14 @@ void SPEXFrameLowering::emitPrologue(MachineFunction &MF,
 }
 
 void SPEXFrameLowering::emitEpilogue(MachineFunction &MF,
-                                       MachineBasicBlock &MBB) const {
+                                     MachineBasicBlock &MBB) const {
   // No-op for now.
   // Later: restore callee-saved regs, restore SP, etc.
   (void)MF;
   (void)MBB;
 }
 
-bool SPEXFrameLowering::hasReservedCallFrame(
-    const MachineFunction &MF) const {
+bool SPEXFrameLowering::hasReservedCallFrame(const MachineFunction &MF) const {
   // If you don't model call frames (no stack args), return false so LLVM
   // won't try to reserve fixed call frame space.
   (void)MF;
@@ -68,8 +67,8 @@ MachineBasicBlock::iterator SPEXFrameLowering::eliminateCallFramePseudoInstr(
 }
 
 void SPEXFrameLowering::determineCalleeSaves(MachineFunction &MF,
-                                               BitVector &SavedRegs,
-                                               RegScavenger *RS) const {
+                                             BitVector &SavedRegs,
+                                             RegScavenger *RS) const {
   // Minimal bring-up: no callee-saved regs are spilled.
   // If you later define CSR sets and want spills, mark them here.
   (void)MF;

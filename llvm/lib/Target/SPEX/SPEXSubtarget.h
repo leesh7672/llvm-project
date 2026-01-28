@@ -36,7 +36,7 @@ private:
 
 public:
   SPEXSubtarget(const Triple &TT, StringRef CPU, StringRef FS,
-                  SPEXTargetMachine &TM);
+                SPEXTargetMachine &TM);
   ~SPEXSubtarget() override;
 
   void ParseSubtargetFeatures(StringRef CPU, StringRef TuneCPU, StringRef FS);

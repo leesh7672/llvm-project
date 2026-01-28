@@ -18,8 +18,7 @@
 
 using namespace llvm;
 
-SPEXRegisterInfo::SPEXRegisterInfo()
-    : SPEXGenRegisterInfo(/*RA=*/SPEX::LR) {}
+SPEXRegisterInfo::SPEXRegisterInfo() : SPEXGenRegisterInfo(/*RA=*/SPEX::LR) {}
 
 // Stack pointer selection.
 // For v1 hardware, registers are globally accessible across lanes.
@@ -57,15 +56,14 @@ SPEXRegisterInfo::getCalleeSavedRegs(const MachineFunction *) const {
   return CSR_SPEX_SaveList;
 }
 
-const uint32_t *
-SPEXRegisterInfo::getCallPreservedMask(const MachineFunction &,
-                                         CallingConv::ID) const {
+const uint32_t *SPEXRegisterInfo::getCallPreservedMask(const MachineFunction &,
+                                                       CallingConv::ID) const {
   return CSR_SPEX_RegMask;
 }
 
-bool SPEXRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator MI,
-                                             int, unsigned FIOperandNum,
-                                             RegScavenger *) const {
+bool SPEXRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator MI, int,
+                                           unsigned FIOperandNum,
+                                           RegScavenger *) const {
 
   MachineFunction &MF = *MI->getParent()->getParent();
   const MachineFrameInfo &MFI = MF.getFrameInfo();

@@ -23,11 +23,11 @@ static constexpr const char *SPEXDataLayout =
     "e-m:e-p:64:64-i64:64-n8:16:32:64-S128";
 
 SPEXTargetMachine::SPEXTargetMachine(const Target &T, const Triple &TT,
-                                         StringRef CPU, StringRef FS,
-                                         const TargetOptions &Options,
-                                         std::optional<Reloc::Model> RM,
-                                         std::optional<CodeModel::Model> CM,
-                                         CodeGenOptLevel OL, bool JIT)
+                                     StringRef CPU, StringRef FS,
+                                     const TargetOptions &Options,
+                                     std::optional<Reloc::Model> RM,
+                                     std::optional<CodeModel::Model> CM,
+                                     CodeGenOptLevel OL, bool JIT)
     : CodeGenTargetMachineImpl(T, SPEXDataLayout, TT, CPU, FS, Options,
                                RM.value_or(Reloc::Static),
                                getEffectiveCodeModel(CM, CodeModel::Small), OL),
@@ -44,9 +44,7 @@ public:
   SPEXPassConfig(SPEXTargetMachine &TM, PassManagerBase &PM)
       : TargetPassConfig(TM, PM) {}
 
-  SPEXTargetMachine &getSPEXTM() const {
-    return getTM<SPEXTargetMachine>();
-  }
+  SPEXTargetMachine &getSPEXTM() const { return getTM<SPEXTargetMachine>(); }
 
   bool addInstSelector() override {
     addPass(createSPEXISelDag(getSPEXTM()));

@@ -22,7 +22,7 @@ using namespace llvm;
 #include "SPEXCallingConv.inc"
 
 SPEXTargetLowering::SPEXTargetLowering(const SPEXTargetMachine &TM,
-                                           const SPEXSubtarget &ST)
+                                       const SPEXSubtarget &ST)
     : TargetLowering(TM, ST), ST(ST) {
   addRegisterClass(MVT::i64, &SPEX::GPRRegClass);
   addRegisterClass(MVT::i32, &SPEX::GPRRegClass);
@@ -115,7 +115,7 @@ const char *SPEXTargetLowering::getTargetNodeName(unsigned Opcode) const {
 }
 
 SDValue SPEXTargetLowering::LowerOperation(SDValue Op,
-                                             SelectionDAG &DAG) const {
+                                           SelectionDAG &DAG) const {
   switch (Op.getOpcode()) {
   case ISD::BR:
     return LowerBR(Op.getOperand(0), Op.getOperand(1), SDLoc(Op), DAG);
@@ -245,9 +245,9 @@ SDValue SPEXTargetLowering::LowerFormalArguments(
 
 SDValue
 SPEXTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID, bool,
-                                  const SmallVectorImpl<ISD::OutputArg> &Outs,
-                                  const SmallVectorImpl<SDValue> &OutVals,
-                                  const SDLoc &DL, SelectionDAG &DAG) const {
+                                const SmallVectorImpl<ISD::OutputArg> &Outs,
+                                const SmallVectorImpl<SDValue> &OutVals,
+                                const SDLoc &DL, SelectionDAG &DAG) const {
   if (Outs.size() > 1)
     report_fatal_error("SPEX: only one return value is supported");
 
@@ -265,7 +265,7 @@ SPEXTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID, bool,
 }
 
 SDValue SPEXTargetLowering::LowerShift(SDValue Op, SelectionDAG &DAG,
-                                         unsigned TgtOpc) const {
+                                       unsigned TgtOpc) const {
   SDLoc DL(Op);
   EVT VT = Op.getValueType();
 
@@ -288,9 +288,9 @@ SDValue SPEXTargetLowering::LowerShift(SDValue Op, SelectionDAG &DAG,
 }
 
 SDValue SPEXTargetLowering::LowerBR_CC(SDValue Chain, ISD::CondCode CC,
-                                         SDValue LHS, SDValue RHS, SDValue Dest,
-                                         const SDLoc &DL,
-                                         SelectionDAG &DAG) const {
+                                       SDValue LHS, SDValue RHS, SDValue Dest,
+                                       const SDLoc &DL,
+                                       SelectionDAG &DAG) const {
   auto ExtendTo = [&](SDValue V, MVT VT) -> SDValue {
     if (V.getValueType() == VT)
       return V;
@@ -312,14 +312,12 @@ SDValue SPEXTargetLowering::LowerBR_CC(SDValue Chain, ISD::CondCode CC,
 }
 
 SDValue SPEXTargetLowering::LowerBR(SDValue Chain, SDValue Dest,
-                                      const SDLoc &DL,
-                                      SelectionDAG &DAG) const {
+                                    const SDLoc &DL, SelectionDAG &DAG) const {
   return DAG.getNode(SPEXISD::BR, DL, MVT::Other, Chain, Dest);
 }
 
-SDValue
-SPEXTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
-                                SmallVectorImpl<SDValue> &InVals) const {
+SDValue SPEXTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
+                                      SmallVectorImpl<SDValue> &InVals) const {
   SelectionDAG &DAG = CLI.DAG;
   SDLoc DL(CLI.DL);
   SDValue Chain = CLI.Chain;

@@ -26,7 +26,7 @@ public:
 } // namespace
 
 MCAsmInfo *createSPEXMCAsmInfo(const MCRegisterInfo &, const Triple &TT,
-                                 const MCTargetOptions &Options) {
+                               const MCTargetOptions &Options) {
   return new SPEXMCAsmInfo(TT, Options);
 }
 } // namespace llvm
