@@ -55,28 +55,28 @@ void SPEXInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   report_fatal_error("SPEX copyPhysReg: unsupported register copy");
 }
 
-static unsigned getCondBranchOpcode(ISD::CondCode CC) {
+static unsigned getCondBranchOpcode(ISD::CondCode CC, bool Is64) {
   switch (CC) {
   case ISD::SETEQ:
-    return SPEX::BCC_eq_64;
+    return Is64 ? SPEX::BCC_eq_64 : SPEX::BCC_eq_32;
   case ISD::SETNE:
-    return SPEX::BCC_ne_64;
+    return Is64 ? SPEX::BCC_ne_64 : SPEX::BCC_ne_32;
   case ISD::SETLT:
-    return SPEX::BCC_lt_64;
+    return Is64 ? SPEX::BCC_lt_64 : SPEX::BCC_lt_32;
   case ISD::SETLE:
-    return SPEX::BCC_le_64;
+    return Is64 ? SPEX::BCC_le_64 : SPEX::BCC_le_32;
   case ISD::SETGT:
-    return SPEX::BCC_gt_64;
+    return Is64 ? SPEX::BCC_gt_64 : SPEX::BCC_gt_32;
   case ISD::SETGE:
-    return SPEX::BCC_ge_64;
+    return Is64 ? SPEX::BCC_ge_64 : SPEX::BCC_ge_32;
   case ISD::SETULT:
-    return SPEX::BCC_ltu_64;
+    return Is64 ? SPEX::BCC_ltu_64 : SPEX::BCC_ltu_32;
   case ISD::SETULE:
-    return SPEX::BCC_leu_64;
+    return Is64 ? SPEX::BCC_leu_64 : SPEX::BCC_leu_32;
   case ISD::SETUGT:
-    return SPEX::BCC_gtu_64;
+    return Is64 ? SPEX::BCC_gtu_64 : SPEX::BCC_gtu_32;
   case ISD::SETUGE:
-    return SPEX::BCC_geu_64;
+    return Is64 ? SPEX::BCC_geu_64 : SPEX::BCC_geu_32;
   default:
     report_fatal_error("SPEX: unsupported branch condition");
   }
@@ -631,7 +631,7 @@ bool SPEXInstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
     unsigned MovOpc = Is32 ? SPEX::MOVMOV32 : SPEX::MOVMOV64;
     BuildMI(MBB, I, DL, get(MovOpc)).addReg(LHS);
     BuildMI(MBB, I, DL, get(CmpOpc)).addReg(RHS);
-    BuildMI(MBB, I, DL, get(getCondBranchOpcode(CC))).addMBB(Dest);
+    BuildMI(MBB, I, DL, get(getCondBranchOpcode(CC, !Is32))).addMBB(Dest);
     MI.eraseFromParent();
     return true;
   }
