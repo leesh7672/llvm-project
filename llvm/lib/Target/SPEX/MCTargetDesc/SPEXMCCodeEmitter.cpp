@@ -131,17 +131,13 @@ void SPEXMCCodeEmitter::encodeInstruction(const MCInst &MI,
       Imm64 = static_cast<uint64_t>(ImmOp->getImm());
       Imm32 = static_cast<uint32_t>(Imm64);
     } else if (ImmOp->isExpr()) {
-      MCFixupKind Kind = (!I64) ? (MCFixupKind)SPEX::fixup_spex64_32
-                                : (MCFixupKind)SPEX::fixup_spex64_64;
-      bool AlreadyHasFixup = false;
-      for (const auto &F : Fixups) {
-        if (F.getOffset() == 4 && F.getValue() == ImmOp->getExpr()) {
-          AlreadyHasFixup = true;
-          break;
-        }
-      }
-      if (!AlreadyHasFixup)
-        Fixups.push_back(MCFixup::create(/*Offset=*/4, ImmOp->getExpr(), Kind));
+      // For symbolic immediates, always emit a relocation so the linker can
+      // resolve it (e.g. `call rmain` in a .o).
+      //
+      // Use the generic data fixup kinds so we don't depend on custom fixup
+      // handling for basic absolute addresses.
+      MCFixupKind Kind = I64 ? FK_Data_8 : FK_Data_4;
+      Fixups.push_back(MCFixup::create(/*Offset=*/4, ImmOp->getExpr(), Kind));
     }
   }
 
