@@ -71,7 +71,7 @@ StringRef Triple::getArchTypeName(ArchType Kind) {
   case sparc:          return "sparc";
   case sparcel:        return "sparcel";
   case sparcv9:        return "sparcv9";
-  case spex64:          return "spex64";
+  case spex:          return "spex";
   case spir64:         return "spir64";
   case spir:           return "spir";
   case spirv:          return "spirv";
@@ -215,7 +215,7 @@ StringRef Triple::getArchTypePrefix(ArchType Kind) {
   case sparcel:
   case sparc:       return "sparc";
 
-  case spex64:    return "spex64";
+  case spex:    return "spex";
 
   case systemz:     return "s390";
 
@@ -641,7 +641,7 @@ static Triple::ArchType parseArch(StringRef ArchName) {
           .Case("sparc", Triple::sparc)
           .Case("sparcel", Triple::sparcel)
           .Cases({"sparcv9", "sparc64"}, Triple::sparcv9)
-          .Case("spex64", Triple::spex64)
+          .Case("spex", Triple::spex)
           .Case("tce", Triple::tce)
           .Case("tcele", Triple::tcele)
           .Case("xcore", Triple::xcore)
@@ -1027,7 +1027,7 @@ static Triple::ObjectFormatType getDefaultFormat(const Triple &T) {
   case Triple::sparc:
   case Triple::sparcel:
   case Triple::sparcv9:
-  case Triple::spex64:
+  case Triple::spex:
   case Triple::spir64:
   case Triple::spir:
   case Triple::tce:
@@ -1781,7 +1781,7 @@ unsigned Triple::getArchPointerBitWidth(llvm::Triple::ArchType Arch) {
   case llvm::Triple::riscv64:
   case llvm::Triple::riscv64be:
   case llvm::Triple::sparcv9:
-  case llvm::Triple::spex64:
+  case llvm::Triple::spex:
   case llvm::Triple::spirv:
   case llvm::Triple::spir64:
   case llvm::Triple::spirv64:
@@ -1947,7 +1947,7 @@ Triple Triple::get64BitArchVariant() const {
   case Triple::riscv64:
   case Triple::riscv64be:
   case Triple::sparcv9:
-  case Triple::spex64:
+  case Triple::spex:
   case Triple::spir64:
   case Triple::spirv64:
   case Triple::systemz:

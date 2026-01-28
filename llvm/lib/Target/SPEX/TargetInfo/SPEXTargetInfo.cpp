@@ -16,6 +16,6 @@ Target &llvm::getTheSPEXTarget() {
 }
 
 extern "C" void LLVMInitializeSPEXTargetInfo() {
-  RegisterTarget<Triple::spex64, /*HasJIT=*/false> X(
-      getTheSPEXTarget(), "spex64", "SPEX", "SPEX");
+  RegisterTarget<Triple::spex, /*HasJIT=*/false> X(
+      getTheSPEXTarget(), "spex", "SPEX", "SPEX");
 }

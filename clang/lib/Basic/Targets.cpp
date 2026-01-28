@@ -525,7 +525,7 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
     default:
       return std::make_unique<SparcV9TargetInfo>(Triple, Opts);
     }
-  case llvm::Triple::spex64:
+  case llvm::Triple::spex:
     return std::make_unique<targets::SPEXTargetInfo>(Triple, Opts);
 
   case llvm::Triple::systemz:
