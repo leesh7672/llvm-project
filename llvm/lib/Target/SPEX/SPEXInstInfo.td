@@ -258,7 +258,7 @@ def BCC_cc_64 : SPEXBCCInst<"bcc-cc\t$target", (outs),
 }
 
 // jmp / call / sp
-def JMP_R : SPEXInst<"jmp\t$r6", (outs), (ins GPR:$r6), 0x200, 0, 0b00, 0, 0>;
+def JMP_R : SPEXInst<"jmp\t$r6", (outs), (ins GPR:$r6, variable_ops), 0x200, 0, 0b00, 0, 0>;
 def JMP32 : SPEXInstNoR6<"jmp	$target", (outs), (ins brtarget:$target),
                            0x200, 0, 0b00, 1, 0> {
 }
@@ -270,25 +270,25 @@ let isCall = 1, Defs = [LR] in
 
 // Absolute-address call (inline immediate address). This is what plain `call`
 // in assembly means.
-def CALL : SPEXInstNoR6<"call\t$imm", (outs), (ins SPEXImm64:$imm),
+def CALL : SPEXInstNoR6<"call\t$imm", (outs), (ins SPEXImm64:$imm, variable_ops),
                            0x203, 0, 0b00, 1, 1> {
 }
 
 // Register-indirect calls. The suffix (32/64) indicates the register width.
 let isCall = 1, Defs = [LR] in
-def CALL32 : SPEXInst<"call32\t$r6", (outs), (ins GPR:$r6),
+def CALL32 : SPEXInst<"call32\t$r6", (outs), (ins GPR:$r6, variable_ops),
                         0x203, 0, 0b10, 0, 0>;
 
 let isCall = 1, Defs = [LR] in
-def CALL64 : SPEXInst<"call64\t$r6", (outs), (ins GPR:$r6),
+def CALL64 : SPEXInst<"call64\t$r6", (outs), (ins GPR:$r6, variable_ops),
                         0x203, 0, 0b11, 0, 0>;
 
 let isCall = 1, isCodeGenOnly = 1 in
 def PSEUDO_CALL : Pseudo<(outs), (ins brtarget:$target), "", []>;
 let isCall = 1, isCodeGenOnly = 1 in
-def PSEUDO_CALLR : Pseudo<(outs), (ins GPR:$r6), "", [(Call GPR:$r6)]>;
+def PSEUDO_CALLR : Pseudo<(outs), (ins GPR:$r6, variable_ops), "", [(Call GPR:$r6)]>;
 
-def SP_RX : SPEXInst<"sp\t$r6", (outs), (ins GPR:$r6), 0x206, 0, 0b00, 0, 0>;
+def SP_RX : SPEXInst<"sp\t$r6", (outs), (ins GPR:$r6, variable_ops), 0x206, 0, 0b00, 0, 0>;
 def SP32 : SPEXInst<"sp	$r6, $target", (outs),
                       (ins GPR:$r6, brtarget:$target),
                       0x206, 0, 0b00, 1, 0> {
@@ -301,7 +301,7 @@ def SP64 : SPEXInst<"sp	$r6, $target", (outs),
 // mov* (rx <-> r6). Lane-local variants are represented as separate mnemonics.
 multiclass SPEX_MOV_SZ<string def_suf, string asm_suf, bits<2> sz2> {
   def MOV#def_suf : SPEXInst<"mov"#asm_suf#"\trx, $r6", (outs),
-                               (ins GPR:$r6), 0x300, 0, sz2, 0, 0> {
+                               (ins GPR:$r6, variable_ops), 0x300, 0, sz2, 0, 0> {
     let Defs = [RX];
   }
   def MOV#def_suf#"_R" : SPEXInst<"mov"#asm_suf#"\t$r6, rx", (outs GPR:$r6),
@@ -349,7 +349,7 @@ multiclass SPEX_LI_SZ<string def_suf, string asm_suf, bits<2> sz2> {
   def LI#def_suf#"_32" : SPEXInstNoR6<"li"#asm_suf#"\trx, $imm", (outs), (ins SPEXImm32:$imm), 0x302, 0, sz2, 1, 0> {
     let Defs = [RX];
   }
-  def LI#def_suf#"_64" : SPEXInstNoR6<"li"#asm_suf#"\trx, $imm", (outs), (ins SPEXImm64:$imm), 0x302, 0, sz2, 1, 1> {
+  def LI#def_suf#"_64" : SPEXInstNoR6<"li"#asm_suf#"\trx, $imm", (outs), (ins SPEXImm64:$imm, variable_ops), 0x302, 0, sz2, 1, 1> {
     let Defs = [RX];
   }
 }
@@ -362,7 +362,7 @@ defm LI : SPEX_LI_SZ<"64", "64", 0b11>;
 multiclass SPEX_ALU_SZ<bits<12> opc, string mn, string def_suf,
                          string asm_suf, bits<2> sz2> {
   def NAME#def_suf#"_R" : SPEXInst<mn#asm_suf#"\trx, $r6", (outs),
-                                    (ins GPR:$r6),
+                                    (ins GPR:$r6, variable_ops),
                                     opc, 0, sz2, 0, 0> {
     let Uses = [RX];
     let Defs = [RX];
@@ -374,7 +374,7 @@ multiclass SPEX_ALU_SZ<bits<12> opc, string mn, string def_suf,
     let Defs = [RX];
   }
   def NAME#def_suf#"_I64" : SPEXInstNoR6<mn#asm_suf#"\trx, $imm", (outs),
-                                      (ins SPEXImm64:$imm),
+                                      (ins SPEXImm64:$imm, variable_ops),
                                       opc, 0, sz2, 1, 1> {
     let Uses = [RX];
     let Defs = [RX];
@@ -389,7 +389,7 @@ multiclass SPEX_ALU<bits<12> opc, string mn> {
 multiclass SPEX_ALUFLAGS_SZ<bits<12> opc, string mn, string def_suf,
                               string asm_suf, bits<2> sz2> {
   def NAME#def_suf#"_R" : SPEXInst<mn#asm_suf#"\trx, $r6", (outs),
-                                    (ins GPR:$r6),
+                                    (ins GPR:$r6, variable_ops),
                                     opc, 0, sz2, 0, 0> {
     let Uses = [RX];
   }
@@ -399,7 +399,7 @@ multiclass SPEX_ALUFLAGS_SZ<bits<12> opc, string mn, string def_suf,
     let Uses = [RX];
   }
   def NAME#def_suf#"_I64" : SPEXInstNoR6<mn#asm_suf#"\trx, $imm", (outs),
-                                     (ins SPEXImm64:$imm),
+                                     (ins SPEXImm64:$imm, variable_ops),
                                      opc, 0, sz2, 1, 1> {
     let Uses = [RX];
   }
@@ -475,7 +475,7 @@ multiclass SPEX_LS_NO_R6<bits<12> opc, string mn, string def_suf,
     let Uses = [RX];
   }
   def NAME#def_suf#"_I64" : SPEXInstNoR6<mn#asm_suf#"\t[rx + $imm]", (outs),
-                                      (ins SPEXImm64:$imm),
+                                      (ins SPEXImm64:$imm, variable_ops),
                                       opc, x1, sz2, 1, 1> {
     let Uses = [RX];
   }
@@ -494,14 +494,14 @@ multiclass SPEX_LS_R6<bits<12> opc, string mn, string def_suf, string asm_suf,
   }
   def NAME#def_suf#"_I64" : SPEXInst<mn#asm_suf#"\t$r6, [rx + $imm]",
                                       (outs GPR:$r6),
-                                      (ins SPEXImm64:$imm),
+                                      (ins SPEXImm64:$imm, variable_ops),
                                       opc, x1, sz2, 1, 1> {
     let Uses = [RX];
   }
 }
 multiclass SPEX_ST_R6<bits<12> opc, string mn, string def_suf, string asm_suf,
                         bits<2> sz2, bits<1> x1> {
-  def NAME#def_suf : SPEXInst<mn#asm_suf#"\t[rx], $r6", (outs), (ins GPR:$r6),
+  def NAME#def_suf : SPEXInst<mn#asm_suf#"\t[rx], $r6", (outs), (ins GPR:$r6, variable_ops),
                                opc, x1, sz2, 0, 0> {
     let Uses = [RX];
   }
@@ -530,7 +530,7 @@ multiclass SPEX_LD_NO_R6<bits<12> opc, string mn, string def_suf,
     let Defs = [RX];
   }
   def NAME#def_suf#"_I64" : SPEXInstNoR6<mn#asm_suf#"\t[rx + $imm]", (outs),
-                                      (ins SPEXImm64:$imm),
+                                      (ins SPEXImm64:$imm, variable_ops),
                                       opc, x1, sz2, 1, 1> {
     let Uses = [RX];
     let Defs = [RX];
@@ -569,7 +569,7 @@ defm ST : SPEX_LS_NO_R6_SZS<0x702, "st", 0>;
 defm ST_R : SPEX_ST_R6_SZS<0x702, "st", 1>;
 
 // Atomic
-def CAS64 : SPEXInst<"cas64\t$r6", (outs), (ins GPR:$r6), 0x800, 0, 0b11, 0, 0>;
+def CAS64 : SPEXInst<"cas64\t$r6", (outs), (ins GPR:$r6, variable_ops), 0x800, 0, 0b11, 0, 0>;
 
 // CSR / MMU / IPI
 def CSRR : SPEXInstNoR6<"csrr\t$imm", (outs), (ins SPEXImm32:$imm),
@@ -583,11 +583,11 @@ def CSRW : SPEXInstNoR6<"csrw\t$imm", (outs), (ins SPEXImm32:$imm),
   let hasSideEffects = 1;
 }
 def TLBFLUSH : SPEXInstNoR6<"tlbflush", (outs), (ins), 0x910, 0, 0b00, 0, 0>;
-def TLBFLUSHASID : SPEXInst<"tlbflushasid\t$r6", (outs), (ins GPR:$r6),
+def TLBFLUSHASID : SPEXInst<"tlbflushasid\t$r6", (outs), (ins GPR:$r6, variable_ops),
                               0x911, 0, 0b00, 0, 0>;
-def ASIDSET : SPEXInst<"asidset\t$r6", (outs), (ins GPR:$r6),
+def ASIDSET : SPEXInst<"asidset\t$r6", (outs), (ins GPR:$r6, variable_ops),
                          0x912, 0, 0b00, 0, 0>;
-def IPISEND : SPEXInst<"ipisend\t$r6", (outs), (ins GPR:$r6),
+def IPISEND : SPEXInst<"ipisend\t$r6", (outs), (ins GPR:$r6, variable_ops),
                          0x920, 0, 0b00, 0, 0>;
 
 // Lane read (K9 encodes LID and FIELD).

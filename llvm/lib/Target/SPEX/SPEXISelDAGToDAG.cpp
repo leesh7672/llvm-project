@@ -295,11 +295,9 @@ void SPEXDAGToDAGISel::Select(SDNode *Node) {
       break;
     }
 
-    // Operand order for call machine nodes begins with the Chain.
-    // The callee follows, then any additional operands (e.g. regmask, arg
-    // registers), and finally optional glue.
+    // Operand order for call machine nodes must place Chain/Glue last.
+    // Normal operands (callee, regmask, arg regs) go first.
     SmallVector<SDValue, 8> Ops;
-    Ops.push_back(Chain);
     Ops.push_back(Callee);
 
     for (unsigned I = 2, E = Node->getNumOperands(); I != E; ++I) {
@@ -310,6 +308,8 @@ void SPEXDAGToDAGISel::Select(SDNode *Node) {
       }
       Ops.push_back(Op);
     }
+
+    Ops.push_back(Chain);
 
     // Select the concrete call form.
     // - Direct symbol/addr calls use the absolute-address immediate form.
