@@ -306,7 +306,7 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
     unsigned CallOpc = SPEX64::CALLR;
     // Direct calls use the immediate form (CALL). Everything else is an
     // indirect call through a value (which will be selected into a register),
-    // so must use CALLR to avoid losing the target and encoding an all-zero
+    // so must use CALL_R to avoid losing the target and encoding an all-zero
     // immediate.
     if (Callee.getOpcode() == ISD::TargetGlobalAddress ||
         Callee.getOpcode() == ISD::TargetExternalSymbol ||
