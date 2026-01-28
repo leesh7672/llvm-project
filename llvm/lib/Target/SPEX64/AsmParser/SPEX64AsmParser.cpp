@@ -153,7 +153,8 @@ class SPEX64AsmParser : public MCTargetAsmParser {
   bool parseImm(OperandVector &Operands) {
     SMLoc StartLoc = getLexer().getLoc();
 
-    if (getLexer().is(AsmToken::Hash) || getLexer().is(AsmToken::At))
+    if (getLexer().is(AsmToken::Hash) || getLexer().is(AsmToken::At) ||
+        getLexer().is(AsmToken::Percent) || getLexer().is(AsmToken::Dollar))
       getLexer().Lex();
 
     // Remember a bare identifier token (e.g. `call rmain`). If the expression

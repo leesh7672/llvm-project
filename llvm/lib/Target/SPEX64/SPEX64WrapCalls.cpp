@@ -60,7 +60,8 @@ public:
         const unsigned Opc = MI.getOpcode();
         const bool IsSPEX64Call =
             MI.isCall() || Opc == SPEX64::CALL || Opc == SPEX64::CALLR ||
-            Opc == SPEX64::CALLI || Opc == SPEX64::CALL32 || Opc == SPEX64::CALL64;
+            Opc == SPEX64::CALLI || Opc == SPEX64::CALL32 ||
+            Opc == SPEX64::CALL64;
 
         if (!IsSPEX64Call)
           continue;

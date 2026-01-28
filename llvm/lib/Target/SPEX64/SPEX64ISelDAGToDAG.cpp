@@ -301,14 +301,14 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
     Ops.push_back(Chain);
 
     // Default: indirect call through a register.
-unsigned CallOpc = SPEX64::CALL64;
+    unsigned CallOpc = SPEX64::CALL64;
 
-// Direct calls use the absolute-address form: `call <symbol>`.
-if (Callee.getOpcode() == ISD::TargetGlobalAddress ||
-    Callee.getOpcode() == ISD::TargetExternalSymbol ||
-    Callee.getOpcode() == ISD::TargetConstantPool ||
-    Callee.getOpcode() == ISD::TargetBlockAddress)
-  CallOpc = SPEX64::CALLI;
+    // Direct calls use the absolute-address form: `call <symbol>`.
+    if (Callee.getOpcode() == ISD::TargetGlobalAddress ||
+        Callee.getOpcode() == ISD::TargetExternalSymbol ||
+        Callee.getOpcode() == ISD::TargetConstantPool ||
+        Callee.getOpcode() == ISD::TargetBlockAddress)
+      CallOpc = SPEX64::CALLI;
 
     if (Glue.getNode())
       Ops.push_back(Glue);
