@@ -135,8 +135,8 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
       SDNode *UseN = UI->getUser();
       if (UseN->isMachineOpcode()) {
         switch (UseN->getMachineOpcode()) {
+        case SPEX64::PSEUDO_CALL:
         case SPEX64::CALL:
-        case SPEX64::CALLI:
         case SPEX64::CALL32:
         case SPEX64::CALL64:
           if (UI->getOperandNo() == 0)
@@ -303,16 +303,16 @@ void SPEX64DAGToDAGISel::Select(SDNode *Node) {
 
     Ops.push_back(Chain);
 
-    unsigned CallOpc = SPEX64::CALLR;
+    unsigned CallOpc = SPEX64::PSEUDO_CALLR;
     // Direct calls use the immediate form (CALL). Everything else is an
     // indirect call through a value (which will be selected into a register),
-    // so must use CALL_R to avoid losing the target and encoding an all-zero
-    // immediate.
+    // so must use the pseudo reg-call to avoid losing the target and encoding
+    // an all-zero immediate.
     if (Callee.getOpcode() == ISD::TargetGlobalAddress ||
         Callee.getOpcode() == ISD::TargetExternalSymbol ||
         Callee.getOpcode() == ISD::TargetConstantPool ||
         Callee.getOpcode() == ISD::TargetBlockAddress)
-      CallOpc = SPEX64::CALLI;
+      CallOpc = SPEX64::CALL;
 
     if (Glue.getNode())
       Ops.push_back(Glue);

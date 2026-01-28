@@ -136,14 +136,14 @@ bool SPEX64InstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
     report_fatal_error(
         "SPEX64: ADJCALLSTACK* with non-zero amount is unsupported");
   }
-  case SPEX64::CALL: {
-    MachineInstrBuilder MIB = BuildMI(MBB, I, DL, get(SPEX64::CALLI));
+  case SPEX64::PSEUDO_CALL: {
+    MachineInstrBuilder MIB = BuildMI(MBB, I, DL, get(SPEX64::CALL));
     for (const MachineOperand &MO : MI.operands())
       MIB.add(MO);
     MI.eraseFromParent();
     return true;
   }
-  case SPEX64::CALLR: {
+  case SPEX64::PSEUDO_CALLR: {
     MachineInstrBuilder MIB = BuildMI(MBB, I, DL, get(SPEX64::CALL64));
     for (const MachineOperand &MO : MI.operands())
       MIB.add(MO);
