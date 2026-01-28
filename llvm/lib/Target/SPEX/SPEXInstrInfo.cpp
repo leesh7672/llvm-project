@@ -150,6 +150,44 @@ bool SPEXInstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
     MI.eraseFromParent();
     return true;
   }
+
+// Safety net: LI* only accepts an Imm/Expr operand. If something upstream
+// accidentally feeds a register into LI*, rewrite it into MOV* (rx <- r6).
+case SPEX::LILI8_32:
+case SPEX::LILI8_64:
+case SPEX::LILI16_32:
+case SPEX::LILI16_64:
+case SPEX::LILI32_32:
+case SPEX::LILI32_64:
+case SPEX::LILI64_32:
+case SPEX::LILI64_64: {
+  if (MI.getNumOperands() >= 1 && MI.getOperand(0).isReg()) {
+    Register Src = MI.getOperand(0).getReg();
+    unsigned MovOpc = SPEX::MOVMOV64;
+    switch (MI.getOpcode()) {
+    case SPEX::LILI8_32:
+    case SPEX::LILI8_64:
+      MovOpc = SPEX::MOVMOV8;
+      break;
+    case SPEX::LILI16_32:
+    case SPEX::LILI16_64:
+      MovOpc = SPEX::MOVMOV16;
+      break;
+    case SPEX::LILI32_32:
+    case SPEX::LILI32_64:
+      MovOpc = SPEX::MOVMOV32;
+      break;
+    default:
+      MovOpc = SPEX::MOVMOV64;
+      break;
+    }
+    BuildMI(MBB, I, DL, get(MovOpc)).addReg(Src);
+    MI.eraseFromParent();
+    return true;
+  }
+  break;
+}
+
   case SPEX::PSEUDO_LI8: {
     Register Dst = MI.getOperand(0).getReg();
     const MachineOperand &SrcOp = MI.getOperand(1);
