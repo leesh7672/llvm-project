@@ -157,9 +157,27 @@ class SPEXAsmParser : public MCTargetAsmParser {
         getLexer().is(AsmToken::Percent) || getLexer().is(AsmToken::Dollar))
       getLexer().Lex();
 
-    // Remember a bare identifier token (e.g. `call rmain`). If the expression
-    // parser later folds it into a constant, we'd lose the symbol reference and
-    // end up encoding an immediate zero with no relocation.
+    // Fast-path: a bare identifier used as an immediate (e.g. `call rmain`)
+    // must be preserved as a symbol reference so the MC layer can emit a fixup
+    // and the object file gets a relocation.
+    if (getLexer().is(AsmToken::Identifier)) {
+      StringRef Name = getLexer().getTok().getIdentifier();
+      AsmToken Next = getLexer().peekTok();
+      if (Next.is(AsmToken::EndOfStatement) || Next.is(AsmToken::Comma) ||
+          Next.is(AsmToken::RBrac)) {
+        MCSymbol *Sym = Parser.getContext().getOrCreateSymbol(Name);
+        const MCExpr *Expr = MCSymbolRefExpr::create(Sym, Parser.getContext());
+        getLexer().Lex(); // eat identifier
+        SMLoc EndLoc = getLexer().getLoc();
+        Operands.push_back(SPEXOperand::createImm(Expr, StartLoc, EndLoc));
+        return false;
+      }
+    }
+
+    // General case: allow full expressions (sym+4, -sym, etc).
+    // Remember a bare identifier token; if the expression parser later folds it
+    // into a constant, we'd lose the symbol reference and end up encoding an
+    // immediate zero with no relocation.
     StringRef SymName;
     if (getLexer().is(AsmToken::Identifier))
       SymName = getLexer().getTok().getIdentifier();
@@ -169,7 +187,6 @@ class SPEXAsmParser : public MCTargetAsmParser {
       return Error(StartLoc, "invalid immediate");
 
     if (!SymName.empty() && isa<MCConstantExpr>(Expr)) {
-      // Re-materialize as a symbol reference so the MC layer can emit a fixup.
       MCSymbol *Sym = Parser.getContext().getOrCreateSymbol(SymName);
       Expr = MCSymbolRefExpr::create(Sym, Parser.getContext());
     }
